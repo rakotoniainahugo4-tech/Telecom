@@ -1,0 +1,6 @@
+{
+  "name": "Tendry Telecom Lab",
+  "description": "Telecommunications & Network Engineering Platform. Real diagnostics, RFC calculators, RF link budgets, fiber optics, MPLS lab, and NOC monitoring.",
+  "requestFramePermissions": ["geolocation"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
