@@ -30,6 +30,13 @@ export const Badge: React.FC<BadgeProps> = ({ type, className = '', size = 'md' 
       colorStyles = 'bg-amber-950/60 text-amber-300 border-amber-500/40 shadow-sm shadow-amber-950';
       dotColor = 'bg-amber-400';
       break;
+    case 'COURS / LEÇON':
+    case 'MODULE PÉDAGOGIQUE':
+    case 'LEÇON':
+    case 'COURS':
+      colorStyles = 'bg-indigo-950/70 text-indigo-300 border-indigo-500/50 shadow-sm shadow-indigo-950';
+      dotColor = 'bg-indigo-400 animate-pulse';
+      break;
     case 'MANUAL INPUT':
       colorStyles = 'bg-blue-950/60 text-blue-300 border-blue-500/40 shadow-sm shadow-blue-950';
       dotColor = 'bg-blue-400';

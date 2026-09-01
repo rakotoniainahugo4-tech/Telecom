@@ -17,7 +17,9 @@ export type AvailabilityBadge =
   | 'LOCAL CALCULATION'
   | 'REFERENCE'
   | 'BACKEND REQUIRED'
-  | 'LAB / SIMULATION';
+  | 'LAB / SIMULATION'
+  | 'COURS / LEÇON'
+  | 'MODULE PÉDAGOGIQUE';
 
 export interface ToolItem {
   id: string;

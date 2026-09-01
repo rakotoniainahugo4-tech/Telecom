@@ -231,43 +231,43 @@ export const ALL_TOOLS: ToolItem[] = [
     featured: true
   },
 
-  // LABS & SIMULATIONS
+  // LEÇONS & COURS PÉDAGOGIQUES TÉLÉCOM
   {
     id: 'mpls-lab',
-    name: 'IP/MPLS Core Architecture Lab',
+    name: 'Cours : Architecture IP/MPLS & L3VPN',
     category: 'MPLS',
-    badge: 'LAB / SIMULATION',
-    description: 'Interactive topology (CE1-PE1-P1-P2-PE2-CE2) with VRF, LDP, BGP-EVPN, OSPF, and label stack inspection.',
+    badge: 'COURS / LEÇON',
+    description: 'Leçon complète en français sur le routage et la commutation MPLS (CE, PE, P), protocoles LDP, BGP-EVPN, VRF et cycle de vie des étiquettes (Push, Swap, PHP, Pop).',
     iconName: 'Network',
     route: '/network/mpls',
     featured: true
   },
   {
     id: 'network-topology',
-    name: 'Interactive Topology Canvas',
+    name: 'Leçon : Topologie de Transport Télécom de Bout en Bout',
     category: 'NETWORK',
-    badge: 'LAB / SIMULATION',
-    description: 'Drag-and-drop telecom diagram designer with Routers, Switches, OLT, Microwave, Cell Towers, and live packet flows.',
+    badge: 'COURS / LEÇON',
+    description: 'Module d\'apprentissage interactif en 7 étapes : Terminaux Utilisateur, Accès GPON/Radio, Agrégation Métro, Cœur IP/MPLS, Services, Transit Internet et Datacenter Cloud.',
     iconName: 'Share2',
     route: '/network/topology',
     featured: true
   },
   {
     id: 'noc-dashboard',
-    name: 'NOC Operations Center',
+    name: 'Cours : Supervision & Exploitation en Centre NOC',
     category: 'DIAGNOSTICS',
-    badge: 'LAB / SIMULATION',
-    description: 'Live Network Operations Center interface displaying active telemetry, alarms, device availability, and traffic monitors.',
+    badge: 'COURS / LEÇON',
+    description: 'Leçon sur l\'exploitation télécom : métrologie, gestion normalisée des alarmes ITU-T X.733, protocoles SNMP/NetFlow, calculs MTTR/SLA et études de cas réels.',
     iconName: 'MonitorDot',
     route: '/network/noc',
     featured: true
   },
   {
     id: 'troubleshooting',
-    name: 'Telecom Troubleshooting Assistant',
+    name: 'Guide Méthodologique de Dépannage Télécom',
     category: 'DIAGNOSTICS',
     badge: 'REFERENCE',
-    description: 'Guided step-by-step diagnostic workflows for 8 major telecom failure modes (Fiber loss, DNS, Routing, VoIP, LTE).',
+    description: 'Arbres de décision et méthodologie pas-à-pas pour diagnostiquer 8 pannes majeures (Fibre optique, DNS, Routage, VoIP SIP, Réseau Mobile).',
     iconName: 'Wrench',
     route: '/tools/troubleshooting'
   }
