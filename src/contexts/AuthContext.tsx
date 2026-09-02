@@ -4,6 +4,42 @@ import { AuthContextType, UserProfile, UserRole } from '../types/auth';
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+const LOCAL_STORAGE_KEY_PREFIX = 'telecom_user_profile_';
+
+const getLocalProfile = (userId: string): UserProfile | null => {
+  try {
+    const saved = localStorage.getItem(`${LOCAL_STORAGE_KEY_PREFIX}${userId}`);
+    if (saved) {
+      return JSON.parse(saved);
+    }
+  } catch {
+    // ignore JSON or localStorage access errors
+  }
+  return null;
+};
+
+const saveLocalProfile = (userId: string, profile: UserProfile) => {
+  try {
+    localStorage.setItem(`${LOCAL_STORAGE_KEY_PREFIX}${userId}`, JSON.stringify(profile));
+  } catch {
+    // ignore
+  }
+};
+
+const isTableMissingError = (err: any): boolean => {
+  if (!err) return false;
+  const msg = (err.message || '').toLowerCase();
+  const code = err.code || '';
+  return (
+    code === 'PGRST205' ||
+    code === 'PGRST204' ||
+    code === '42P01' ||
+    msg.includes('could not find the table') ||
+    msg.includes('relation "public.profiles" does not exist') ||
+    msg.includes('schema cache')
+  );
+};
+
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<any | null>(null);
   const [session, setSession] = useState<any | null>(null);
@@ -11,9 +47,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Fetch or initialize user profile from 'profiles' table in Supabase
+  // Fetch or initialize user profile from 'profiles' table or graceful fallback
   const fetchProfile = async (userId: string, userEmail?: string, userMeta?: any) => {
     if (!isSupabaseConfigured) return;
+
+    // 1. Prepare baseline profile from cached local storage or user metadata
+    const cached = getLocalProfile(userId);
+    const baselineProfile: UserProfile = cached || {
+      id: userId,
+      full_name: userMeta?.full_name || userEmail?.split('@')[0] || 'Ingénieur Télécom',
+      avatar_url: userMeta?.avatar_url || null,
+      role: (userMeta?.role as UserRole) || 'STUDENT',
+      speciality: userMeta?.speciality || 'Réseaux & Télécoms IP',
+      bio: userMeta?.bio || 'Étudiant / Ingénieur en cours de spécialisation sur TELECOM LAB.',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    };
+
     try {
       const { data, error: profileError } = await supabase
         .from('profiles')
@@ -21,21 +71,30 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         .eq('id', userId)
         .maybeSingle();
 
-      if (profileError && profileError.code !== 'PGRST116') {
-        console.error('Error fetching profile from Supabase:', profileError.message);
+      if (profileError) {
+        if (isTableMissingError(profileError)) {
+          // Table not created yet on Supabase - use baseline profile seamlessly
+          setProfile(baselineProfile);
+          saveLocalProfile(userId, baselineProfile);
+          return;
+        } else if (profileError.code !== 'PGRST116') {
+          console.warn('Notice fetching profile from Supabase:', profileError.message);
+        }
       }
 
       if (data) {
-        setProfile(data as UserProfile);
+        const fullProf = { ...baselineProfile, ...data } as UserProfile;
+        setProfile(fullProf);
+        saveLocalProfile(userId, fullProf);
       } else {
-        // Auto-provision initial profile row if missing
+        // Auto-provision initial profile row in Supabase if table exists
         const newProfile: UserProfile = {
           id: userId,
-          full_name: userMeta?.full_name || userEmail?.split('@')[0] || 'Ingénieur Télécom',
-          avatar_url: userMeta?.avatar_url || null,
-          role: 'STUDENT' as UserRole,
-          speciality: 'Réseaux & Télécoms IP',
-          bio: 'Étudiant / Ingénieur en cours de spécialisation sur TELECOM LAB.',
+          full_name: userMeta?.full_name || baselineProfile.full_name,
+          avatar_url: userMeta?.avatar_url || baselineProfile.avatar_url,
+          role: (userMeta?.role as UserRole) || 'STUDENT',
+          speciality: baselineProfile.speciality,
+          bio: baselineProfile.bio,
         };
 
         const { data: inserted, error: insertError } = await supabase
@@ -45,14 +104,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           .maybeSingle();
 
         if (insertError) {
-          console.warn('Profile auto-create notice:', insertError.message);
+          if (!isTableMissingError(insertError)) {
+            console.warn('Profile auto-create notice:', insertError.message);
+          }
           setProfile(newProfile);
+          saveLocalProfile(userId, newProfile);
         } else if (inserted) {
           setProfile(inserted as UserProfile);
+          saveLocalProfile(userId, inserted as UserProfile);
+        } else {
+          setProfile(newProfile);
+          saveLocalProfile(userId, newProfile);
         }
       }
     } catch (err: any) {
-      console.error('Unexpected error in profile fetch:', err);
+      // Graceful fallback on network or schema error
+      setProfile(baselineProfile);
+      saveLocalProfile(userId, baselineProfile);
     }
   };
 
@@ -106,6 +174,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           data: {
             full_name: fullName,
             role: 'STUDENT',
+            speciality: 'Réseaux & Télécoms IP',
           },
         },
       });
@@ -116,7 +185,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
 
       if (data.user) {
-        await fetchProfile(data.user.id, data.user.email, { full_name: fullName });
+        await fetchProfile(data.user.id, data.user.email, { full_name: fullName, role: 'STUDENT' });
       }
 
       return { error: null };
@@ -188,35 +257,68 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const updateProfile = async (updates: Partial<UserProfile>) => {
-    if (!user || !isSupabaseConfigured) {
-      return { error: { message: 'Utilisateur non connecté ou Supabase non configuré' } };
+    if (!user) {
+      return { error: { message: 'Utilisateur non connecté' } };
     }
 
+    const updatedData: UserProfile = {
+      ...(profile || {
+        id: user.id,
+        full_name: user.email?.split('@')[0] || 'Ingénieur Télécom',
+        avatar_url: null,
+        role: 'STUDENT',
+      }),
+      ...updates,
+      updated_at: new Date().toISOString(),
+    };
+
+    // Always update React state & local persistence immediately
+    setProfile(updatedData);
+    saveLocalProfile(user.id, updatedData);
+
+    // Also update Supabase user metadata as fallback auth store
     try {
-      const updatedData = {
-        ...updates,
-        updated_at: new Date().toISOString(),
-      };
-
-      const { data, error: updateError } = await supabase
-        .from('profiles')
-        .update(updatedData)
-        .eq('id', user.id)
-        .select()
-        .single();
-
-      if (updateError) {
-        return { error: updateError };
-      }
-
-      if (data) {
-        setProfile(data as UserProfile);
-      }
-
-      return { error: null };
-    } catch (err: any) {
-      return { error: err };
+      await supabase.auth.updateUser({
+        data: {
+          full_name: updatedData.full_name,
+          avatar_url: updatedData.avatar_url,
+          speciality: updatedData.speciality,
+          bio: updatedData.bio,
+        }
+      });
+    } catch {
+      // non-fatal
     }
+
+    if (isSupabaseConfigured) {
+      try {
+        const { data, error: updateError } = await supabase
+          .from('profiles')
+          .update(updatedData)
+          .eq('id', user.id)
+          .select()
+          .maybeSingle();
+
+        if (updateError) {
+          if (isTableMissingError(updateError)) {
+            // Table doesn't exist yet on Supabase, but local storage and auth meta are updated
+            return { error: null };
+          }
+          return { error: updateError };
+        }
+
+        if (data) {
+          setProfile(data as UserProfile);
+          saveLocalProfile(user.id, data as UserProfile);
+        }
+      } catch (err: any) {
+        if (!isTableMissingError(err)) {
+          console.warn('Profile sync notice:', err);
+        }
+      }
+    }
+
+    return { error: null };
   };
 
   const refreshProfile = async () => {

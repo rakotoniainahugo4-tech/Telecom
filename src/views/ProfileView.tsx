@@ -14,7 +14,11 @@ import {
   Cpu, 
   KeyRound,
   Sparkles,
-  Award
+  Award,
+  Database,
+  Copy,
+  ChevronDown,
+  ChevronUp
 } from 'lucide-react';
 import { Badge } from '../components/Badge';
 
@@ -38,6 +42,26 @@ const PRESET_AVATARS = [
   'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&auto=format&fit=crop&q=80',
 ];
 
+const SUPABASE_SCHEMA_SQL = `-- TELECOM LAB : Schéma PostgreSQL pour la table profiles
+CREATE TYPE IF NOT EXISTS public.user_role AS ENUM ('STUDENT', 'INSTRUCTOR', 'ADMIN');
+
+CREATE TABLE IF NOT EXISTS public.profiles (
+    id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+    full_name TEXT,
+    avatar_url TEXT,
+    role public.user_role DEFAULT 'STUDENT'::public.user_role NOT NULL,
+    speciality TEXT DEFAULT 'Réseaux & Télécoms IP',
+    bio TEXT,
+    created_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL,
+    updated_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Lecture publique pour authentifiés" ON public.profiles FOR SELECT TO authenticated USING (true);
+CREATE POLICY "Insertion utilisateur" ON public.profiles FOR INSERT TO authenticated WITH CHECK (auth.uid() = id);
+CREATE POLICY "Mise à jour utilisateur" ON public.profiles FOR UPDATE TO authenticated USING (auth.uid() = id);`;
+
 export const ProfileView: React.FC<ProfileViewProps> = ({ onNavigate }) => {
   const { user, profile, updateProfile, refreshProfile } = useAuth();
 
@@ -49,6 +73,8 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onNavigate }) => {
   const [saving, setSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
+  const [showSqlGuide, setShowSqlGuide] = useState(false);
+  const [copiedSql, setCopiedSql] = useState(false);
 
   useEffect(() => {
     if (profile) {
@@ -81,6 +107,12 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onNavigate }) => {
       await refreshProfile();
       setTimeout(() => setSaveSuccess(false), 4000);
     }
+  };
+
+  const copySqlToClipboard = () => {
+    navigator.clipboard.writeText(SUPABASE_SCHEMA_SQL);
+    setCopiedSql(true);
+    setTimeout(() => setCopiedSql(false), 3000);
   };
 
   const role = profile?.role || 'STUDENT';
@@ -160,7 +192,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onNavigate }) => {
                 <span className="text-slate-200 text-right truncate max-w-[150px]">{speciality.split('(')[0]}</span>
               </div>
               <div className="flex justify-between text-slate-400">
-                <span>ID Supabase :</span>
+                <span>ID Utilisateur :</span>
                 <span className="text-slate-200 font-mono text-[10px] truncate max-w-[140px]">{user?.id}</span>
               </div>
               <div className="flex justify-between text-slate-400">
@@ -195,21 +227,21 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onNavigate }) => {
         </div>
 
         {/* Right Column: Edit Profile Form */}
-        <div className="lg:col-span-8">
+        <div className="lg:col-span-8 space-y-6">
           <div className="rounded-2xl glass-panel border border-white/10 p-6 sm:p-8 space-y-6">
             <div className="flex items-center justify-between pb-4 border-b border-white/10">
               <h2 className="font-heading font-bold text-lg text-white">
                 Modifier mes Informations Personnelles
               </h2>
               <span className="text-xs font-mono text-purple-400">
-                Persistance PostgreSQL Supabase
+                Synchronisation Instantanée
               </span>
             </div>
 
             {saveSuccess && (
               <div className="p-3.5 rounded-xl bg-emerald-950/50 border border-emerald-500/40 text-emerald-200 text-xs font-sans flex items-center gap-2">
                 <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-                <span>Votre profil a été synchronisé et enregistré avec succès dans la base Supabase !</span>
+                <span>Votre profil a été enregistré et synchronisé avec succès !</span>
               </div>
             )}
 
@@ -316,6 +348,56 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onNavigate }) => {
                 </button>
               </div>
             </form>
+          </div>
+
+          {/* Collapsible Supabase SQL Schema helper */}
+          <div className="rounded-2xl glass-panel border border-white/10 p-4 space-y-3">
+            <button
+              type="button"
+              onClick={() => setShowSqlGuide(!showSqlGuide)}
+              className="w-full flex items-center justify-between text-left cursor-pointer"
+            >
+              <div className="flex items-center gap-2 text-xs font-mono text-purple-300 font-bold">
+                <Database className="w-4 h-4 text-purple-400" />
+                <span>Optionnel : Schéma SQL Supabase pour persistance multi-appareils</span>
+              </div>
+              {showSqlGuide ? (
+                <ChevronUp className="w-4 h-4 text-slate-400" />
+              ) : (
+                <ChevronDown className="w-4 h-4 text-slate-400" />
+              )}
+            </button>
+
+            {showSqlGuide && (
+              <div className="pt-3 border-t border-white/10 space-y-3 animate-in fade-in">
+                <p className="text-xs text-slate-400 font-sans leading-relaxed">
+                  Votre profil est actuellement sauvegardé automatiquement. Pour le répliquer sur tous vos appareils via votre base Supabase, vous pouvez exécuter ce script dans le <strong className="text-white">SQL Editor</strong> de Supabase :
+                </p>
+
+                <div className="relative">
+                  <pre className="p-3.5 rounded-xl bg-[#090912] border border-white/10 font-mono text-[11px] text-purple-200 overflow-x-auto leading-relaxed max-h-44">
+                    {SUPABASE_SCHEMA_SQL}
+                  </pre>
+                  <button
+                    type="button"
+                    onClick={copySqlToClipboard}
+                    className="absolute top-2.5 right-2.5 flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-purple-600 hover:bg-purple-500 text-white font-mono text-[10px] font-bold transition-all shadow-md"
+                  >
+                    {copiedSql ? (
+                      <>
+                        <CheckCircle2 className="w-3 h-3 text-emerald-300" />
+                        <span>Copié !</span>
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="w-3 h-3" />
+                        <span>Copier SQL</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
