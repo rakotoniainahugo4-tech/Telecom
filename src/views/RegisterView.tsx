@@ -66,8 +66,8 @@ export const RegisterView: React.FC<RegisterViewProps> = ({ onNavigate }) => {
       <div className="w-full max-w-md space-y-6">
         {/* Header Branding */}
         <div className="text-center space-y-2">
-          <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-gradient-to-br from-purple-600 to-indigo-700 border border-purple-400/40 text-white shadow-xl shadow-purple-950 mb-2">
-            <Radio className="w-6 h-6 animate-pulse" />
+          <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-gradient-to-br from-cyan-500 via-sky-500 to-blue-600 border border-cyan-300/50 text-slate-950 shadow-xl shadow-cyan-950/60 mb-2">
+            <Radio className="w-6 h-6 animate-pulse text-slate-950 stroke-[2.5]" />
           </div>
           <h1 className="text-2xl sm:text-3xl font-heading font-black text-white tracking-tight">
             INSCRIPTION TELECOM LAB
@@ -78,13 +78,13 @@ export const RegisterView: React.FC<RegisterViewProps> = ({ onNavigate }) => {
         </div>
 
         {/* Card Box */}
-        <div className="p-6 sm:p-8 rounded-2xl glass-panel-glow border border-purple-500/30 space-y-6">
+        <div className="p-6 sm:p-8 rounded-2xl glass-panel-glow border border-cyan-500/30 space-y-6">
           {!isConfigured && (
             <div className="p-3.5 rounded-xl bg-amber-950/40 border border-amber-500/30 text-amber-200 text-xs font-sans flex items-start gap-2.5">
               <KeyRound className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
               <div>
                 <span className="font-bold font-mono">Configuration requise : </span>
-                Ajoutez <code className="text-purple-300">VITE_SUPABASE_URL</code> et <code className="text-purple-300">VITE_SUPABASE_PUBLISHABLE_KEY</code> dans vos variables d'environnement.
+                Ajoutez <code className="text-cyan-300">VITE_SUPABASE_URL</code> et <code className="text-cyan-300">VITE_SUPABASE_PUBLISHABLE_KEY</code> dans vos variables d'environnement.
               </div>
             </div>
           )}
@@ -106,7 +106,7 @@ export const RegisterView: React.FC<RegisterViewProps> = ({ onNavigate }) => {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-1.5">
               <label className="text-xs font-mono font-bold text-slate-300 flex items-center gap-1.5">
-                <User className="w-3.5 h-3.5 text-purple-400" />
+                <User className="w-3.5 h-3.5 text-cyan-400" />
                 Nom complet ou Pseudo
               </label>
               <input
@@ -115,13 +115,13 @@ export const RegisterView: React.FC<RegisterViewProps> = ({ onNavigate }) => {
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
                 placeholder="Ingénieur Jean Dupont"
-                className="w-full px-4 py-3 rounded-xl bg-[#090912] border border-white/10 text-white placeholder:text-slate-600 focus:outline-none focus:border-purple-500 font-mono text-xs transition-colors"
+                className="w-full px-4 py-3 rounded-xl bg-[#09111e] border border-cyan-500/20 text-white placeholder:text-slate-600 focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 font-mono text-xs transition-colors"
               />
             </div>
 
             <div className="space-y-1.5">
               <label className="text-xs font-mono font-bold text-slate-300 flex items-center gap-1.5">
-                <Mail className="w-3.5 h-3.5 text-purple-400" />
+                <Mail className="w-3.5 h-3.5 text-cyan-400" />
                 Adresse Email
               </label>
               <input
@@ -130,13 +130,13 @@ export const RegisterView: React.FC<RegisterViewProps> = ({ onNavigate }) => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="ingenieur@telecomlab.org"
-                className="w-full px-4 py-3 rounded-xl bg-[#090912] border border-white/10 text-white placeholder:text-slate-600 focus:outline-none focus:border-purple-500 font-mono text-xs transition-colors"
+                className="w-full px-4 py-3 rounded-xl bg-[#09111e] border border-cyan-500/20 text-white placeholder:text-slate-600 focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 font-mono text-xs transition-colors"
               />
             </div>
 
             <div className="space-y-1.5">
               <label className="text-xs font-mono font-bold text-slate-300 flex items-center gap-1.5">
-                <Lock className="w-3.5 h-3.5 text-purple-400" />
+                <Lock className="w-3.5 h-3.5 text-cyan-400" />
                 Mot de Passe (min. 6 caractères)
               </label>
               <input
@@ -145,13 +145,13 @@ export const RegisterView: React.FC<RegisterViewProps> = ({ onNavigate }) => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••••••"
-                className="w-full px-4 py-3 rounded-xl bg-[#090912] border border-white/10 text-white placeholder:text-slate-600 focus:outline-none focus:border-purple-500 font-mono text-xs transition-colors"
+                className="w-full px-4 py-3 rounded-xl bg-[#09111e] border border-cyan-500/20 text-white placeholder:text-slate-600 focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 font-mono text-xs transition-colors"
               />
             </div>
 
             <div className="space-y-1.5">
               <label className="text-xs font-mono font-bold text-slate-300 flex items-center gap-1.5">
-                <Lock className="w-3.5 h-3.5 text-purple-400" />
+                <Lock className="w-3.5 h-3.5 text-cyan-400" />
                 Confirmer le Mot de Passe
               </label>
               <input
@@ -160,37 +160,37 @@ export const RegisterView: React.FC<RegisterViewProps> = ({ onNavigate }) => {
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 placeholder="••••••••••••"
-                className="w-full px-4 py-3 rounded-xl bg-[#090912] border border-white/10 text-white placeholder:text-slate-600 focus:outline-none focus:border-purple-500 font-mono text-xs transition-colors"
+                className="w-full px-4 py-3 rounded-xl bg-[#09111e] border border-cyan-500/20 text-white placeholder:text-slate-600 focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 font-mono text-xs transition-colors"
               />
             </div>
 
             <button
               type="submit"
               disabled={loading || !isConfigured}
-              className="w-full py-3.5 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 disabled:opacity-50 text-white font-mono text-xs font-bold uppercase tracking-wider transition-all shadow-lg shadow-purple-950 flex items-center justify-center gap-2 cursor-pointer mt-2"
+              className="w-full py-3.5 rounded-xl bg-gradient-to-r from-cyan-500 via-sky-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 disabled:opacity-50 text-slate-950 font-mono text-xs font-bold uppercase tracking-wider transition-all shadow-lg shadow-cyan-950/60 flex items-center justify-center gap-2 cursor-pointer mt-2 border border-cyan-300/40"
             >
               {loading ? (
                 <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <Loader2 className="w-4 h-4 animate-spin text-slate-950" />
                   <span>Création du compte...</span>
                 </>
               ) : (
                 <>
                   <span>Créer mon Compte Ingénieur</span>
-                  <ArrowRight className="w-4 h-4" />
+                  <ArrowRight className="w-4 h-4 text-slate-950 stroke-[2.5]" />
                 </>
               )}
             </button>
           </form>
 
           {/* Switch to Login */}
-          <div className="pt-4 border-t border-white/10 text-center">
+          <div className="pt-4 border-t border-cyan-500/15 text-center">
             <p className="text-xs text-slate-400 font-sans">
               Vous avez déjà un compte ?{' '}
               <button
                 type="button"
                 onClick={() => onNavigate('login')}
-                className="text-purple-400 hover:text-purple-300 font-mono font-bold underline decoration-purple-500/50 underline-offset-4"
+                className="text-cyan-400 hover:text-cyan-300 font-mono font-bold underline decoration-cyan-500/50 underline-offset-4"
               >
                 Se connecter
               </button>

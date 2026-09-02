@@ -22,8 +22,8 @@ export const Badge: React.FC<BadgeProps> = ({ type, className = '', size = 'md' 
       dotColor = 'bg-cyan-400';
       break;
     case 'REFERENCE':
-      colorStyles = 'bg-purple-950/60 text-purple-300 border-purple-500/40 shadow-sm shadow-purple-950';
-      dotColor = 'bg-purple-400';
+      colorStyles = 'bg-sky-950/70 text-sky-300 border-sky-500/40 shadow-sm shadow-sky-950';
+      dotColor = 'bg-sky-400';
       break;
     case 'LAB / SIMULATION':
     case 'DEMO / SIMULATION':
@@ -34,8 +34,8 @@ export const Badge: React.FC<BadgeProps> = ({ type, className = '', size = 'md' 
     case 'MODULE PÉDAGOGIQUE':
     case 'LEÇON':
     case 'COURS':
-      colorStyles = 'bg-indigo-950/70 text-indigo-300 border-indigo-500/50 shadow-sm shadow-indigo-950';
-      dotColor = 'bg-indigo-400 animate-pulse';
+      colorStyles = 'bg-cyan-950/80 text-cyan-300 border-cyan-400/50 shadow-sm shadow-cyan-950';
+      dotColor = 'bg-cyan-400 animate-pulse';
       break;
     case 'MANUAL INPUT':
       colorStyles = 'bg-blue-950/60 text-blue-300 border-blue-500/40 shadow-sm shadow-blue-950';

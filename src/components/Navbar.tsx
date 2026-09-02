@@ -100,8 +100,8 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPath, currentRoute, onNav
         <div 
           className={`max-w-7xl mx-auto px-4 py-2.5 rounded-2xl border transition-all duration-300 ${
             scrolled 
-              ? 'bg-[#090912]/95 backdrop-blur-xl border-purple-500/20 shadow-2xl shadow-purple-950/40' 
-              : 'bg-[#0e0e17]/85 backdrop-blur-lg border-white/10'
+              ? 'bg-[#0a101d]/95 backdrop-blur-xl border-cyan-500/25 shadow-2xl shadow-cyan-950/50' 
+              : 'bg-[#0b1424]/85 backdrop-blur-lg border-cyan-500/15'
           } flex items-center justify-between`}
         >
           {/* Brand Logo */}
@@ -109,16 +109,16 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPath, currentRoute, onNav
             onClick={() => handleNavClick('/')}
             className="flex items-center gap-3 cursor-pointer group shrink-0"
           >
-            <div className="relative flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-purple-600 to-indigo-700 border border-purple-400/40 text-white shadow-lg shadow-purple-900/50 group-hover:scale-105 transition-transform">
-              <Radio className="w-5 h-5 animate-pulse" />
-              <div className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-emerald-400 border-2 border-[#090912]" />
+            <div className="relative flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-500 via-sky-500 to-blue-600 border border-cyan-300/50 text-slate-950 shadow-lg shadow-cyan-950/60 group-hover:scale-105 group-hover:shadow-[0_0_20px_rgba(6,182,212,0.4)] transition-all">
+              <Radio className="w-5 h-5 animate-pulse text-slate-950 stroke-[2.5]" />
+              <div className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-emerald-400 border-2 border-[#070c14]" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="font-heading font-extrabold text-base tracking-wider text-white">
+                <span className="font-heading font-extrabold text-base tracking-wider text-white group-hover:text-cyan-300 transition-colors">
                   TENDRY
                 </span>
-                <span className="text-[10px] font-mono font-bold uppercase tracking-widest px-1.5 py-0.5 rounded bg-purple-500/20 text-purple-300 border border-purple-500/30">
+                <span className="text-[10px] font-mono font-bold uppercase tracking-widest px-1.5 py-0.5 rounded bg-cyan-500/15 text-cyan-300 border border-cyan-400/30">
                   LAB
                 </span>
               </div>
@@ -139,11 +139,11 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPath, currentRoute, onNav
                   onClick={() => handleNavClick(item.path)}
                   className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-mono font-medium transition-all ${
                     active
-                      ? 'bg-purple-600/20 text-purple-300 border border-purple-500/40 shadow-sm shadow-purple-950'
-                      : 'text-slate-300 hover:text-white hover:bg-white/5 border border-transparent'
+                      ? 'bg-cyan-500/15 text-cyan-300 border border-cyan-400/40 shadow-sm shadow-cyan-950/60'
+                      : 'text-slate-300 hover:text-white hover:bg-cyan-950/30 hover:border-cyan-500/20 border border-transparent'
                   }`}
                 >
-                  <Icon className={`w-3.5 h-3.5 ${active ? 'text-purple-400' : 'text-slate-400'}`} />
+                  <Icon className={`w-3.5 h-3.5 ${active ? 'text-cyan-400' : 'text-slate-400'}`} />
                   {item.label}
                 </button>
               );
@@ -156,47 +156,47 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPath, currentRoute, onNav
               <div className="relative">
                 <button
                   onClick={() => setUserDropdownOpen(!userDropdownOpen)}
-                  className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-purple-950/60 hover:bg-purple-900/60 border border-purple-500/40 text-white text-xs font-mono transition-all"
+                  className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-cyan-950/60 hover:bg-cyan-900/60 border border-cyan-500/40 text-white text-xs font-mono transition-all hover:border-cyan-400/70"
                 >
-                  <div className="w-6 h-6 rounded-lg bg-purple-600 flex items-center justify-center text-[11px] font-bold">
+                  <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-cyan-500 to-blue-600 text-slate-950 flex items-center justify-center text-[11px] font-bold">
                     {profile?.full_name?.charAt(0) || user.email?.charAt(0)?.toUpperCase() || 'U'}
                   </div>
-                  <span className="font-bold max-w-[100px] truncate">
+                  <span className="font-bold max-w-[100px] truncate text-slate-100">
                     {profile?.full_name?.split(' ')[0] || user.email?.split('@')[0]}
                   </span>
-                  <span className="text-[10px] px-1.5 py-0.2 rounded bg-purple-500/30 text-purple-200">
+                  <span className="text-[10px] px-1.5 py-0.2 rounded bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">
                     {profile?.role || 'STUDENT'}
                   </span>
-                  <ChevronDown className="w-3.5 h-3.5 text-purple-400" />
+                  <ChevronDown className="w-3.5 h-3.5 text-cyan-400" />
                 </button>
 
                 {/* Dropdown Menu */}
                 {userDropdownOpen && (
-                  <div className="absolute right-0 mt-2 w-52 rounded-2xl glass-panel-glow border border-purple-500/40 py-2 shadow-2xl z-50 animate-in fade-in slide-in-from-top-2">
-                    <div className="px-4 py-2 border-b border-white/10">
+                  <div className="absolute right-0 mt-2 w-52 rounded-2xl glass-panel-glow border border-cyan-500/40 py-2 shadow-2xl z-50 animate-in fade-in slide-in-from-top-2">
+                    <div className="px-4 py-2 border-b border-cyan-500/20">
                       <p className="text-xs font-bold font-heading text-white truncate">{profile?.full_name || 'Ingénieur'}</p>
-                      <p className="text-[10px] font-mono text-purple-300 truncate">{user.email}</p>
+                      <p className="text-[10px] font-mono text-cyan-300 truncate">{user.email}</p>
                     </div>
 
                     <div className="py-1">
                       <button
                         onClick={() => handleNavClick('/dashboard')}
-                        className="w-full text-left px-4 py-2 text-xs font-mono text-slate-200 hover:bg-purple-600/20 hover:text-purple-300 flex items-center gap-2 transition-colors"
+                        className="w-full text-left px-4 py-2 text-xs font-mono text-slate-200 hover:bg-cyan-500/15 hover:text-cyan-300 flex items-center gap-2 transition-colors"
                       >
-                        <LayoutDashboard className="w-4 h-4 text-purple-400" />
+                        <LayoutDashboard className="w-4 h-4 text-cyan-400" />
                         Tableau de Bord
                       </button>
 
                       <button
                         onClick={() => handleNavClick('/profile')}
-                        className="w-full text-left px-4 py-2 text-xs font-mono text-slate-200 hover:bg-purple-600/20 hover:text-purple-300 flex items-center gap-2 transition-colors"
+                        className="w-full text-left px-4 py-2 text-xs font-mono text-slate-200 hover:bg-cyan-500/15 hover:text-cyan-300 flex items-center gap-2 transition-colors"
                       >
-                        <User className="w-4 h-4 text-purple-400" />
+                        <User className="w-4 h-4 text-cyan-400" />
                         Mon Profil
                       </button>
                     </div>
 
-                    <div className="pt-1 border-t border-white/10">
+                    <div className="pt-1 border-t border-cyan-500/20">
                       <button
                         onClick={handleSignOut}
                         className="w-full text-left px-4 py-2 text-xs font-mono text-rose-300 hover:bg-rose-950/40 flex items-center gap-2 transition-colors"
@@ -212,14 +212,14 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPath, currentRoute, onNav
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => handleNavClick('/login')}
-                  className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-purple-600/20 hover:bg-purple-600/30 text-purple-300 border border-purple-500/40 text-xs font-mono font-bold transition-all shadow-sm"
+                  className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-cyan-500/15 hover:bg-cyan-500/25 text-cyan-300 border border-cyan-400/40 text-xs font-mono font-bold transition-all shadow-sm"
                 >
                   <LogIn className="w-3.5 h-3.5" />
                   Connexion
                 </button>
                 <button
                   onClick={() => handleNavClick('/register')}
-                  className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-mono font-bold uppercase tracking-wider transition-all shadow-lg shadow-purple-950"
+                  className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-950 text-xs font-mono font-bold uppercase tracking-wider transition-all shadow-lg shadow-cyan-950/60 border border-cyan-300/40"
                 >
                   Inscription
                 </button>
@@ -228,9 +228,9 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPath, currentRoute, onNav
 
             <button
               onClick={() => handleNavClick('/tools')}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white text-xs font-mono font-semibold tracking-wider uppercase border border-purple-400/30 shadow-lg shadow-purple-900/40 transition-all"
+              className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-cyan-500 via-sky-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-950 text-xs font-mono font-bold tracking-wider uppercase border border-cyan-300/50 shadow-lg shadow-cyan-950/60 hover:shadow-[0_0_20px_rgba(6,182,212,0.35)] transition-all"
             >
-              <Wrench className="w-3.5 h-3.5" />
+              <Wrench className="w-3.5 h-3.5 stroke-[2.5]" />
               TOOLBOX
             </button>
           </div>
@@ -238,26 +238,26 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPath, currentRoute, onNav
           {/* Mobile Hamburger Toggle */}
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="xl:hidden p-2 rounded-xl bg-white/5 border border-white/10 text-slate-300 hover:text-white"
+            className="xl:hidden p-2 rounded-xl bg-cyan-950/30 border border-cyan-500/20 text-slate-300 hover:text-white"
             aria-label="Toggle menu"
           >
-            {mobileMenuOpen ? <X className="w-6 h-6 text-purple-400" /> : <Menu className="w-6 h-6" />}
+            {mobileMenuOpen ? <X className="w-6 h-6 text-cyan-400" /> : <Menu className="w-6 h-6" />}
           </button>
         </div>
       </header>
 
       {/* Mobile Slide-out Drawer */}
       {mobileMenuOpen && (
-        <div className="fixed inset-0 z-50 xl:hidden bg-black/90 backdrop-blur-xl flex flex-col justify-between p-6 overflow-y-auto">
+        <div className="fixed inset-0 z-50 xl:hidden bg-[#070c14]/95 backdrop-blur-xl flex flex-col justify-between p-6 overflow-y-auto">
           <div>
-            <div className="flex items-center justify-between pb-4 border-b border-white/10">
+            <div className="flex items-center justify-between pb-4 border-b border-cyan-500/20">
               <div className="flex items-center gap-3">
-                <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-purple-600 text-white">
+                <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-gradient-to-br from-cyan-500 to-blue-600 text-slate-950 font-bold">
                   <Radio className="w-5 h-5" />
                 </div>
                 <div>
                   <span className="font-heading font-extrabold text-white">TENDRY TELECOM LAB</span>
-                  <p className="text-[10px] font-mono text-purple-300">LEARN • PRACTICE • ENGINEER</p>
+                  <p className="text-[10px] font-mono text-cyan-300">LEARN • PRACTICE • ENGINEER</p>
                 </div>
               </div>
               <button
@@ -270,10 +270,10 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPath, currentRoute, onNav
 
             {/* Auth status on mobile */}
             {user ? (
-              <div className="my-4 p-3.5 rounded-xl bg-purple-950/50 border border-purple-500/30 flex items-center justify-between">
+              <div className="my-4 p-3.5 rounded-xl bg-cyan-950/50 border border-cyan-500/30 flex items-center justify-between">
                 <div>
                   <p className="text-xs font-bold text-white">{profile?.full_name || user.email}</p>
-                  <p className="text-[10px] font-mono text-purple-300">Rôle : {profile?.role || 'STUDENT'}</p>
+                  <p className="text-[10px] font-mono text-cyan-300">Rôle : {profile?.role || 'STUDENT'}</p>
                 </div>
                 <button
                   onClick={handleSignOut}
@@ -286,13 +286,13 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPath, currentRoute, onNav
               <div className="grid grid-cols-2 gap-2 my-4">
                 <button
                   onClick={() => handleNavClick('/login')}
-                  className="py-2.5 rounded-xl bg-purple-600/20 text-purple-300 border border-purple-500/40 text-xs font-mono font-bold text-center"
+                  className="py-2.5 rounded-xl bg-cyan-500/15 text-cyan-300 border border-cyan-500/40 text-xs font-mono font-bold text-center"
                 >
                   Connexion
                 </button>
                 <button
                   onClick={() => handleNavClick('/register')}
-                  className="py-2.5 rounded-xl bg-purple-600 text-white text-xs font-mono font-bold uppercase tracking-wider text-center"
+                  className="py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 text-slate-950 text-xs font-mono font-bold uppercase tracking-wider text-center shadow-lg shadow-cyan-950/60"
                 >
                   Inscription
                 </button>
@@ -310,15 +310,15 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPath, currentRoute, onNav
                     onClick={() => handleNavClick(item.path)}
                     className={`flex items-center justify-between px-4 py-3 rounded-xl text-sm font-mono font-medium transition-all ${
                       active
-                        ? 'bg-purple-600/30 text-purple-300 border border-purple-500/50'
-                        : 'text-slate-300 hover:bg-white/5 hover:text-white'
+                        ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-400/50 shadow-sm shadow-cyan-950/50'
+                        : 'text-slate-300 hover:bg-cyan-950/30 hover:text-white'
                     }`}
                   >
                     <div className="flex items-center gap-3">
-                      <Icon className={`w-4 h-4 ${active ? 'text-purple-400' : 'text-slate-400'}`} />
+                      <Icon className={`w-4 h-4 ${active ? 'text-cyan-400' : 'text-slate-400'}`} />
                       {item.label}
                     </div>
-                    {active && <span className="w-2 h-2 rounded-full bg-purple-400 animate-pulse" />}
+                    {active && <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />}
                   </button>
                 );
               })}
@@ -326,10 +326,10 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPath, currentRoute, onNav
           </div>
 
           {/* Mobile Footer CTAs */}
-          <div className="space-y-3 pt-4 border-t border-white/10">
+          <div className="space-y-3 pt-4 border-t border-cyan-500/20">
             <button
               onClick={() => handleNavClick('/tools')}
-              className="w-full py-3 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-mono font-bold tracking-wider uppercase text-center shadow-lg shadow-purple-900/50"
+              className="w-full py-3 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-950 text-xs font-mono font-bold tracking-wider uppercase text-center shadow-lg shadow-cyan-950/60"
             >
               EXPLORE TOOLBOX (20+ TOOLS)
             </button>

@@ -60,7 +60,7 @@ export const ToolboxView: React.FC<ToolboxViewProps> = ({ onNavigate }) => {
     <div className="min-h-screen pt-24 pb-16 px-4 sm:px-6 max-w-7xl mx-auto">
       {/* Header Banner */}
       <div className="space-y-4 mb-8">
-        <div className="flex items-center gap-2 text-xs font-mono text-purple-400 font-bold uppercase tracking-widest">
+        <div className="flex items-center gap-2 text-xs font-mono text-cyan-400 font-bold uppercase tracking-widest">
           <span>// TELECOM ENGINEERING TOOLBOX</span>
         </div>
         <h1 className="font-heading font-extrabold text-3xl sm:text-4xl text-white tracking-tight">
@@ -75,13 +75,13 @@ export const ToolboxView: React.FC<ToolboxViewProps> = ({ onNavigate }) => {
       <div className="space-y-4 mb-10">
         {/* Search Input */}
         <div className="relative max-w-xl">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-cyan-400/70" />
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search an engineering tool (e.g., subnet, ping, fiber, FSPL, VoIP)..."
-            className="w-full pl-11 pr-4 py-3 bg-[#0e0e17] border border-white/10 rounded-xl text-sm font-sans text-white placeholder-slate-500 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-all"
+            className="w-full pl-11 pr-4 py-3 bg-[#0a1424] border border-cyan-500/20 rounded-xl text-sm font-sans text-white placeholder-slate-500 focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 transition-all shadow-inner"
           />
           {searchQuery && (
             <button
@@ -103,8 +103,8 @@ export const ToolboxView: React.FC<ToolboxViewProps> = ({ onNavigate }) => {
                 onClick={() => setSelectedCategory(cat)}
                 className={`px-3 py-1.5 rounded-lg text-xs font-mono font-medium whitespace-nowrap transition-all ${
                   active
-                    ? 'bg-purple-600 text-white shadow-md shadow-purple-950 border border-purple-400/40'
-                    : 'bg-[#0e0e17] text-slate-300 hover:text-white hover:bg-white/5 border border-white/10'
+                    ? 'bg-gradient-to-r from-cyan-500 to-blue-600 text-slate-950 font-bold shadow-md shadow-cyan-950/60 border border-cyan-300/50'
+                    : 'bg-[#0b1424] text-slate-300 hover:text-white hover:bg-cyan-950/40 border border-cyan-500/15'
                 }`}
               >
                 {cat}
@@ -115,14 +115,14 @@ export const ToolboxView: React.FC<ToolboxViewProps> = ({ onNavigate }) => {
       </div>
 
       {/* Tools Count Indicator */}
-      <div className="flex items-center justify-between pb-4 border-b border-white/10 mb-6 text-xs font-mono text-slate-400">
+      <div className="flex items-center justify-between pb-4 border-b border-cyan-500/15 mb-6 text-xs font-mono text-slate-400">
         <span>SHOWING {filteredTools.length} OF {ALL_TOOLS.length} ENGINEERING TOOLS</span>
-        <span className="hidden sm:inline text-[11px] text-purple-400">SELECT A TOOL TO LAUNCH</span>
+        <span className="hidden sm:inline text-[11px] text-cyan-400 font-semibold">SELECT A TOOL TO LAUNCH</span>
       </div>
 
       {/* Tool Cards Grid */}
       {filteredTools.length === 0 ? (
-        <div className="text-center py-16 rounded-2xl glass-panel border border-white/10 space-y-3">
+        <div className="text-center py-16 rounded-2xl glass-panel border border-cyan-500/20 space-y-3">
           <Wrench className="w-10 h-10 text-slate-500 mx-auto" />
           <h3 className="font-heading font-bold text-lg text-white">No tools found</h3>
           <p className="text-xs text-slate-400 font-sans max-w-sm mx-auto">
@@ -130,7 +130,7 @@ export const ToolboxView: React.FC<ToolboxViewProps> = ({ onNavigate }) => {
           </p>
           <button
             onClick={() => { setSearchQuery(''); setSelectedCategory('ALL'); }}
-            className="px-4 py-2 text-xs font-mono rounded-lg bg-purple-600 text-white font-medium hover:bg-purple-500 transition-colors"
+            className="px-4 py-2 text-xs font-mono rounded-lg bg-gradient-to-r from-cyan-500 to-blue-600 text-slate-950 font-bold hover:from-cyan-400 hover:to-blue-500 transition-colors"
           >
             Reset Filters
           </button>
@@ -142,17 +142,17 @@ export const ToolboxView: React.FC<ToolboxViewProps> = ({ onNavigate }) => {
               <div
                 key={tool.id}
                 onClick={() => onNavigate(tool.route)}
-                className="group relative rounded-2xl glass-panel p-6 border border-white/10 hover:border-purple-500/50 hover:bg-[#12121f] transition-all duration-300 cursor-pointer flex flex-col justify-between"
+                className="group relative rounded-2xl glass-panel p-6 border border-cyan-500/15 hover:border-cyan-400/50 hover:bg-[#0c1626] hover:shadow-[0_0_20px_rgba(6,182,212,0.15)] transition-all duration-300 cursor-pointer flex flex-col justify-between"
               >
                 <div>
                   <div className="flex items-center justify-between mb-4">
-                    <div className="w-10 h-10 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-400 group-hover:scale-110 group-hover:bg-purple-500/20 transition-all">
+                    <div className="w-10 h-10 rounded-xl bg-cyan-500/10 border border-cyan-500/25 flex items-center justify-center text-cyan-400 group-hover:scale-110 group-hover:bg-cyan-500/20 group-hover:border-cyan-400/50 transition-all">
                       <Wrench className="w-5 h-5" />
                     </div>
                     <Badge type={tool.badge} size="sm" />
                   </div>
 
-                  <h3 className="font-heading font-bold text-lg text-white group-hover:text-purple-300 transition-colors mb-2">
+                  <h3 className="font-heading font-bold text-lg text-white group-hover:text-cyan-300 transition-colors mb-2">
                     {tool.name}
                   </h3>
                   <p className="text-xs text-slate-400 font-sans leading-relaxed line-clamp-3 mb-6">
@@ -160,7 +160,7 @@ export const ToolboxView: React.FC<ToolboxViewProps> = ({ onNavigate }) => {
                   </p>
                 </div>
 
-                <div className="pt-4 border-t border-white/5 flex items-center justify-between text-xs font-mono text-purple-400 group-hover:text-purple-300">
+                <div className="pt-4 border-t border-cyan-500/10 flex items-center justify-between text-xs font-mono text-cyan-400 group-hover:text-cyan-300">
                   <span className="uppercase font-semibold tracking-wider">Launch Tool</span>
                   <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                 </div>

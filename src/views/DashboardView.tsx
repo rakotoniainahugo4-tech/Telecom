@@ -89,10 +89,10 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onNavigate }) => {
   return (
     <div className="min-h-screen pt-24 pb-16 px-4 sm:px-6 max-w-7xl mx-auto space-y-8">
       {/* Top Welcome Banner */}
-      <div className="rounded-3xl glass-panel-glow border border-purple-500/30 p-6 sm:p-8 relative overflow-hidden">
+      <div className="rounded-3xl glass-panel-glow border border-cyan-500/30 p-6 sm:p-8 relative overflow-hidden">
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="space-y-3 max-w-2xl">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-900/50 border border-purple-500/40 text-purple-300 text-xs font-mono font-bold">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-cyan-950/70 border border-cyan-500/40 text-cyan-300 text-xs font-mono font-bold">
               <span>TABLEAU DE BORD PERSONNEL</span>
               <span>&bull;</span>
               <span>{userRole}</span>
@@ -101,7 +101,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onNavigate }) => {
               Bienvenue, {userName}
             </h1>
             <p className="text-xs sm:text-sm text-slate-300 font-sans">
-              Spécialité active : <span className="text-purple-300 font-mono font-semibold">{speciality}</span>
+              Spécialité active : <span className="text-cyan-300 font-mono font-semibold">{speciality}</span>
             </p>
             <p className="text-xs text-slate-400 font-sans leading-relaxed pt-1">
               Reprenez vos travaux pratiques, explorez les leçons d'architecture télécom ou utilisez les calculateurs professionnels d'ingénierie.
@@ -111,16 +111,16 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onNavigate }) => {
           <div className="flex flex-wrap items-center gap-3">
             <button
               onClick={() => onNavigate('profile')}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-slate-200 border border-white/10 text-xs font-mono font-bold transition-all"
+              className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-cyan-950/40 hover:bg-cyan-950/70 text-slate-200 border border-cyan-500/20 text-xs font-mono font-bold transition-all"
             >
-              <User className="w-4 h-4 text-purple-400" />
+              <User className="w-4 h-4 text-cyan-400" />
               Éditer mon Profil
             </button>
             <button
               onClick={() => onNavigate('network-topology')}
-              className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-mono font-bold uppercase tracking-wider transition-all shadow-lg shadow-purple-950"
+              className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 via-sky-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-950 text-xs font-mono font-bold uppercase tracking-wider transition-all shadow-lg shadow-cyan-950/60 border border-cyan-300/40"
             >
-              <Play className="w-4 h-4" />
+              <Play className="w-4 h-4 text-slate-950 fill-slate-950" />
               Reprendre le Cours
             </button>
           </div>
@@ -132,7 +132,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onNavigate }) => {
         {stats.map((stat, idx) => {
           const Icon = stat.icon;
           return (
-            <div key={idx} className="rounded-2xl glass-panel p-5 border border-white/10 space-y-3">
+            <div key={idx} className="rounded-2xl glass-panel p-5 border border-cyan-500/15 hover:border-cyan-400/40 space-y-3 transition-all">
               <div className="flex items-center justify-between">
                 <span className="text-[10px] font-mono uppercase font-bold text-slate-400">
                   {stat.label}
@@ -142,7 +142,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onNavigate }) => {
               <div className="text-2xl font-black font-heading text-white">
                 {stat.value}
               </div>
-              <div className="text-[11px] font-mono text-slate-400 flex items-center gap-1.5 pt-1 border-t border-white/5">
+              <div className="text-[11px] font-mono text-slate-400 flex items-center gap-1.5 pt-1 border-t border-cyan-500/10">
                 <span className="text-emerald-400 font-bold">{stat.change}</span>
               </div>
             </div>
@@ -154,7 +154,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onNavigate }) => {
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Radio className="w-4 h-4 text-purple-400" />
+            <Radio className="w-4 h-4 text-cyan-400" />
             <h2 className="font-heading font-extrabold text-lg text-white tracking-wide uppercase">
               LES 3 PILIERS DE LA PLATEFORME TELECOM LAB
             </h2>
@@ -163,9 +163,9 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onNavigate }) => {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {/* Pillar 1: ACADEMY */}
-          <div className="rounded-2xl glass-panel p-6 border border-purple-500/30 hover:border-purple-400/50 transition-all flex flex-col justify-between space-y-5">
+          <div className="rounded-2xl glass-panel p-6 border border-cyan-500/25 hover:border-cyan-400/50 hover:shadow-[0_0_20px_rgba(6,182,212,0.15)] transition-all flex flex-col justify-between space-y-5">
             <div className="space-y-3">
-              <div className="w-10 h-10 rounded-xl bg-purple-950/60 border border-purple-500/40 flex items-center justify-center text-purple-300">
+              <div className="w-10 h-10 rounded-xl bg-cyan-950/60 border border-cyan-500/40 flex items-center justify-center text-cyan-300">
                 <BookOpen className="w-5 h-5" />
               </div>
               <h3 className="font-heading font-bold text-xl text-white">
@@ -175,17 +175,17 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onNavigate }) => {
                 Apprentissage méthodique des normes et protocoles : routage IP (BGP, OSPF), réseaux mobiles (LTE, 5G), transmission optique et VoIP.
               </p>
             </div>
-            <div className="space-y-2 pt-2 border-t border-white/10">
+            <div className="space-y-2 pt-2 border-t border-cyan-500/15">
               <button
                 onClick={() => onNavigate('network-topology')}
-                className="w-full flex items-center justify-between p-2.5 rounded-lg bg-white/5 hover:bg-white/10 text-purple-300 text-xs font-mono transition-colors"
+                className="w-full flex items-center justify-between p-2.5 rounded-lg bg-cyan-950/40 hover:bg-cyan-900/50 text-cyan-300 text-xs font-mono transition-colors border border-cyan-500/15"
               >
                 <span>Topologie Réseau de Bout en Bout</span>
                 <ArrowRight className="w-4 h-4" />
               </button>
               <button
                 onClick={() => onNavigate('docs')}
-                className="w-full flex items-center justify-between p-2.5 rounded-lg bg-white/5 hover:bg-white/10 text-slate-300 text-xs font-mono transition-colors"
+                className="w-full flex items-center justify-between p-2.5 rounded-lg bg-cyan-950/40 hover:bg-cyan-900/50 text-slate-300 text-xs font-mono transition-colors border border-cyan-500/15"
               >
                 <span>Documentation & Guides RFC</span>
                 <ArrowRight className="w-4 h-4" />
@@ -194,9 +194,9 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onNavigate }) => {
           </div>
 
           {/* Pillar 2: LABORATORY */}
-          <div className="rounded-2xl glass-panel p-6 border border-cyan-500/30 hover:border-cyan-400/50 transition-all flex flex-col justify-between space-y-5">
+          <div className="rounded-2xl glass-panel p-6 border border-sky-500/25 hover:border-sky-400/50 hover:shadow-[0_0_20px_rgba(14,165,233,0.15)] transition-all flex flex-col justify-between space-y-5">
             <div className="space-y-3">
-              <div className="w-10 h-10 rounded-xl bg-cyan-950/60 border border-cyan-500/40 flex items-center justify-center text-cyan-300">
+              <div className="w-10 h-10 rounded-xl bg-sky-950/60 border border-sky-500/40 flex items-center justify-center text-sky-300">
                 <Network className="w-5 h-5" />
               </div>
               <h3 className="font-heading font-bold text-xl text-white">
@@ -206,17 +206,17 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onNavigate }) => {
                 Pratique et simulation de protocoles en temps réel : manipulation de tables LFIB, commutation de labels MPLS et diagnostics de paquets.
               </p>
             </div>
-            <div className="space-y-2 pt-2 border-t border-white/10">
+            <div className="space-y-2 pt-2 border-t border-cyan-500/15">
               <button
                 onClick={() => onNavigate('mpls-lab')}
-                className="w-full flex items-center justify-between p-2.5 rounded-lg bg-white/5 hover:bg-white/10 text-cyan-300 text-xs font-mono transition-colors"
+                className="w-full flex items-center justify-between p-2.5 rounded-lg bg-sky-950/40 hover:bg-sky-900/50 text-sky-300 text-xs font-mono transition-colors border border-sky-500/15"
               >
                 <span>Laboratoire IP/MPLS L3VPN</span>
                 <ArrowRight className="w-4 h-4" />
               </button>
               <button
                 onClick={() => onNavigate('noc-dashboard')}
-                className="w-full flex items-center justify-between p-2.5 rounded-lg bg-white/5 hover:bg-white/10 text-slate-300 text-xs font-mono transition-colors"
+                className="w-full flex items-center justify-between p-2.5 rounded-lg bg-sky-950/40 hover:bg-sky-900/50 text-slate-300 text-xs font-mono transition-colors border border-sky-500/15"
               >
                 <span>Simulateur NOC & Alarmes</span>
                 <ArrowRight className="w-4 h-4" />
@@ -225,7 +225,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onNavigate }) => {
           </div>
 
           {/* Pillar 3: ENGINEERING */}
-          <div className="rounded-2xl glass-panel p-6 border border-emerald-500/30 hover:border-emerald-400/50 transition-all flex flex-col justify-between space-y-5">
+          <div className="rounded-2xl glass-panel p-6 border border-emerald-500/25 hover:border-emerald-400/50 hover:shadow-[0_0_20px_rgba(16,185,129,0.15)] transition-all flex flex-col justify-between space-y-5">
             <div className="space-y-3">
               <div className="w-10 h-10 rounded-xl bg-emerald-950/60 border border-emerald-500/40 flex items-center justify-center text-emerald-300">
                 <Wrench className="w-5 h-5" />
@@ -237,17 +237,17 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onNavigate }) => {
                 Boîte à outils de calculs normalisés pour ingénieurs terrain : bilans de liaison RF, budgets optiques fibre, calculs de sous-réseaux et baies racks.
               </p>
             </div>
-            <div className="space-y-2 pt-2 border-t border-white/10">
+            <div className="space-y-2 pt-2 border-t border-cyan-500/15">
               <button
                 onClick={() => onNavigate('toolbox')}
-                className="w-full flex items-center justify-between p-2.5 rounded-lg bg-white/5 hover:bg-white/10 text-emerald-300 text-xs font-mono transition-colors"
+                className="w-full flex items-center justify-between p-2.5 rounded-lg bg-emerald-950/40 hover:bg-emerald-900/50 text-emerald-300 text-xs font-mono transition-colors border border-emerald-500/15"
               >
                 <span>Boîte à Outils (20+ Calculateurs)</span>
                 <ArrowRight className="w-4 h-4" />
               </button>
               <button
                 onClick={() => onNavigate('troubleshooting')}
-                className="w-full flex items-center justify-between p-2.5 rounded-lg bg-white/5 hover:bg-white/10 text-slate-300 text-xs font-mono transition-colors"
+                className="w-full flex items-center justify-between p-2.5 rounded-lg bg-emerald-950/40 hover:bg-emerald-900/50 text-slate-300 text-xs font-mono transition-colors border border-emerald-500/15"
               >
                 <span>Arbres de Dépannage Réseau</span>
                 <ArrowRight className="w-4 h-4" />
@@ -269,23 +269,23 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onNavigate }) => {
               <div 
                 key={idx} 
                 onClick={() => onNavigate(track.route)}
-                className={`p-6 rounded-2xl glass-panel border ${track.color} cursor-pointer group hover:scale-[1.01] transition-all space-y-4`}
+                className={`p-6 rounded-2xl glass-panel border border-cyan-500/20 hover:border-cyan-400/50 bg-[#091220]/70 cursor-pointer group hover:scale-[1.01] transition-all space-y-4`}
               >
                 <div className="flex items-center justify-between">
-                  <span className="text-[10px] font-mono uppercase font-bold text-purple-300">
+                  <span className="text-[10px] font-mono uppercase font-bold text-cyan-300">
                     {track.category}
                   </span>
-                  <span className="px-2.5 py-0.5 rounded-full bg-white/5 border border-white/10 text-[10px] font-mono text-slate-300">
+                  <span className="px-2.5 py-0.5 rounded-full bg-cyan-950/50 border border-cyan-500/20 text-[10px] font-mono text-cyan-300">
                     {track.badge}
                   </span>
                 </div>
 
                 <div className="flex items-start gap-3">
-                  <div className="p-2.5 rounded-xl bg-white/5 border border-white/10 text-purple-300 shrink-0">
+                  <div className="p-2.5 rounded-xl bg-cyan-950/50 border border-cyan-500/25 text-cyan-300 shrink-0">
                     <Icon className="w-5 h-5" />
                   </div>
                   <div>
-                    <h4 className="font-heading font-bold text-base text-white group-hover:text-purple-300 transition-colors">
+                    <h4 className="font-heading font-bold text-base text-white group-hover:text-cyan-300 transition-colors">
                       {track.title}
                     </h4>
                     <p className="text-xs text-slate-300 font-sans mt-1">
@@ -294,12 +294,12 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onNavigate }) => {
                   </div>
                 </div>
 
-                <div className="pt-2 border-t border-white/10 flex items-center justify-between text-xs font-mono">
+                <div className="pt-2 border-t border-cyan-500/10 flex items-center justify-between text-xs font-mono">
                   <div className="flex items-center gap-2 text-slate-400">
                     <span>Avancement :</span>
                     <span className="text-white font-bold">{track.progress}%</span>
                   </div>
-                  <span className="text-purple-400 font-bold flex items-center gap-1 group-hover:translate-x-1 transition-transform">
+                  <span className="text-cyan-400 font-bold flex items-center gap-1 group-hover:translate-x-1 transition-transform">
                     Ouvrir <ArrowRight className="w-3.5 h-3.5" />
                   </span>
                 </div>

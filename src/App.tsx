@@ -313,7 +313,7 @@ export default function App() {
 
   return (
     <AuthProvider>
-      <div className="min-h-screen bg-[#050508] telecom-grid flex flex-col text-slate-100 selection:bg-purple-600 selection:text-white">
+      <div className="min-h-screen bg-[#070c14] telecom-grid flex flex-col text-slate-100 selection:bg-cyan-500 selection:text-slate-950">
         <Navbar currentRoute={currentRoute} currentPath={currentRoute} onNavigate={navigate} />
 
         <main className="flex-1">

@@ -120,12 +120,12 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onNavigate }) => {
   return (
     <div className="min-h-screen pt-24 pb-16 px-4 sm:px-6 max-w-5xl mx-auto space-y-8">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-white/10">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-cyan-500/15">
         <div>
-          <div className="flex items-center gap-2 text-xs font-mono text-purple-400 font-bold uppercase tracking-widest mb-1">
+          <div className="flex items-center gap-2 text-xs font-mono text-cyan-400 font-bold uppercase tracking-widest mb-1">
             <span>// ESPACE MEMBRE TELECOM LAB</span>
             <span>&bull;</span>
-            <span className="px-2 py-0.5 rounded bg-purple-500/20 text-purple-300 border border-purple-500/30 text-[10px]">
+            <span className="px-2 py-0.5 rounded bg-cyan-950/60 text-cyan-300 border border-cyan-500/30 text-[10px]">
               ROLE: {role}
             </span>
           </div>
@@ -140,7 +140,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onNavigate }) => {
         <div className="flex items-center gap-3">
           <button
             onClick={() => onNavigate('dashboard')}
-            className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-slate-300 border border-white/10 text-xs font-mono transition-all"
+            className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-cyan-950/40 hover:bg-cyan-950/70 text-cyan-300 border border-cyan-500/20 text-xs font-mono transition-all"
           >
             Accéder au Dashboard
           </button>
@@ -150,10 +150,10 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onNavigate }) => {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         {/* Left Column: Profile Card Overview */}
         <div className="lg:col-span-4 space-y-6">
-          <div className="rounded-2xl glass-panel-glow border border-purple-500/30 p-6 flex flex-col items-center text-center space-y-4">
+          <div className="rounded-2xl glass-panel-glow border border-cyan-500/30 p-6 flex flex-col items-center text-center space-y-4">
             {/* Avatar container */}
             <div className="relative">
-              <div className="w-24 h-24 rounded-2xl overflow-hidden border-2 border-purple-500/50 bg-[#090912] flex items-center justify-center text-purple-300 shadow-xl shadow-purple-950/60">
+              <div className="w-24 h-24 rounded-2xl overflow-hidden border-2 border-cyan-500/50 bg-[#09111e] flex items-center justify-center text-cyan-300 shadow-xl shadow-cyan-950/60">
                 {avatarUrl ? (
                   <img 
                     src={avatarUrl} 
@@ -174,19 +174,19 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onNavigate }) => {
               <h3 className="font-heading font-bold text-lg text-white">
                 {fullName || user?.email?.split('@')[0] || 'Ingénieur Télécom'}
               </h3>
-              <p className="text-xs font-mono text-purple-300 mt-0.5">
+              <p className="text-xs font-mono text-cyan-300 mt-0.5">
                 {user?.email}
               </p>
             </div>
 
             {/* Role Chip */}
-            <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-purple-950/60 border border-purple-500/40 text-purple-200 text-xs font-mono font-bold">
-              <Award className="w-3.5 h-3.5 text-purple-400" />
+            <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-cyan-950/60 border border-cyan-500/40 text-cyan-200 text-xs font-mono font-bold">
+              <Award className="w-3.5 h-3.5 text-cyan-400" />
               <span>Statut : {role}</span>
             </div>
 
             {/* Meta info table */}
-            <div className="w-full pt-4 border-t border-white/10 space-y-2 text-left text-xs font-mono">
+            <div className="w-full pt-4 border-t border-cyan-500/15 space-y-2 text-left text-xs font-mono">
               <div className="flex justify-between text-slate-400">
                 <span>Spécialité :</span>
                 <span className="text-slate-200 text-right truncate max-w-[150px]">{speciality.split('(')[0]}</span>
@@ -205,7 +205,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onNavigate }) => {
           </div>
 
           {/* Quick preset avatars */}
-          <div className="rounded-2xl glass-panel border border-white/10 p-5 space-y-3">
+          <div className="rounded-2xl glass-panel border border-cyan-500/15 p-5 space-y-3">
             <span className="text-xs font-mono font-bold text-slate-300 block">
               Sélectionner un avatar rapide :
             </span>
@@ -216,7 +216,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onNavigate }) => {
                   type="button"
                   onClick={() => setAvatarUrl(url)}
                   className={`w-12 h-12 rounded-xl overflow-hidden border transition-all ${
-                    avatarUrl === url ? 'border-purple-400 ring-2 ring-purple-500/50 scale-105' : 'border-white/10 opacity-70 hover:opacity-100'
+                    avatarUrl === url ? 'border-cyan-400 ring-2 ring-cyan-500/50 scale-105' : 'border-white/10 opacity-70 hover:opacity-100'
                   }`}
                 >
                   <img src={url} alt={`Preset ${idx + 1}`} className="w-full h-full object-cover" />
@@ -228,12 +228,12 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onNavigate }) => {
 
         {/* Right Column: Edit Profile Form */}
         <div className="lg:col-span-8 space-y-6">
-          <div className="rounded-2xl glass-panel border border-white/10 p-6 sm:p-8 space-y-6">
-            <div className="flex items-center justify-between pb-4 border-b border-white/10">
+          <div className="rounded-2xl glass-panel border border-cyan-500/15 p-6 sm:p-8 space-y-6">
+            <div className="flex items-center justify-between pb-4 border-b border-cyan-500/15">
               <h2 className="font-heading font-bold text-lg text-white">
                 Modifier mes Informations Personnelles
               </h2>
-              <span className="text-xs font-mono text-purple-400">
+              <span className="text-xs font-mono text-cyan-400">
                 Synchronisation Instantanée
               </span>
             </div>
@@ -247,7 +247,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onNavigate }) => {
 
             {saveError && (
               <div className="p-3.5 rounded-xl bg-rose-950/50 border border-rose-500/40 text-rose-200 text-xs font-sans flex items-center gap-2">
-                <AlertCircle className="w-4 h-4 text-rose-400 shrink-0" />
+                <AlertCircle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
                 <span>{saveError}</span>
               </div>
             )}
@@ -264,7 +264,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onNavigate }) => {
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
                     placeholder="Jean Dupont"
-                    className="w-full px-4 py-3 rounded-xl bg-[#090912] border border-white/10 text-white font-mono text-xs focus:outline-none focus:border-purple-500 transition-colors"
+                    className="w-full px-4 py-3 rounded-xl bg-[#09111e] border border-cyan-500/20 text-white font-mono text-xs focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 transition-colors"
                   />
                 </div>
 
@@ -288,10 +288,10 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onNavigate }) => {
                 <select
                   value={speciality}
                   onChange={(e) => setSpeciality(e.target.value)}
-                  className="w-full px-4 py-3 rounded-xl bg-[#090912] border border-white/10 text-white font-mono text-xs focus:outline-none focus:border-purple-500 transition-colors cursor-pointer"
+                  className="w-full px-4 py-3 rounded-xl bg-[#09111e] border border-cyan-500/20 text-white font-mono text-xs focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 transition-colors cursor-pointer"
                 >
                   {SPECIALITIES.map((spec, i) => (
-                    <option key={i} value={spec} className="bg-[#0e0e17] text-white">
+                    <option key={i} value={spec} className="bg-[#0b1424] text-white">
                       {spec}
                     </option>
                   ))}
@@ -307,7 +307,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onNavigate }) => {
                   value={avatarUrl}
                   onChange={(e) => setAvatarUrl(e.target.value)}
                   placeholder="https://example.com/mon-avatar.jpg"
-                  className="w-full px-4 py-3 rounded-xl bg-[#090912] border border-white/10 text-white font-mono text-xs focus:outline-none focus:border-purple-500 transition-colors"
+                  className="w-full px-4 py-3 rounded-xl bg-[#09111e] border border-cyan-500/20 text-white font-mono text-xs focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 transition-colors"
                 />
               </div>
 
@@ -320,11 +320,11 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onNavigate }) => {
                   value={bio}
                   onChange={(e) => setBio(e.target.value)}
                   placeholder="Décrivez vos compétences actuelles, vos certifications visées (CCNA, CCNP, JNCIA, Nokia NRS) ou vos projets en cours..."
-                  className="w-full px-4 py-3 rounded-xl bg-[#090912] border border-white/10 text-white font-sans text-xs focus:outline-none focus:border-purple-500 transition-colors leading-relaxed"
+                  className="w-full px-4 py-3 rounded-xl bg-[#09111e] border border-cyan-500/20 text-white font-sans text-xs focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 transition-colors leading-relaxed"
                 />
               </div>
 
-              <div className="pt-4 border-t border-white/10 flex items-center justify-between">
+              <div className="pt-4 border-t border-cyan-500/15 flex items-center justify-between">
                 <span className="text-[11px] font-mono text-slate-500">
                   Dernière mise à jour : {profile?.updated_at ? new Date(profile.updated_at).toLocaleString('fr-FR') : 'Jamais'}
                 </span>
@@ -332,16 +332,16 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onNavigate }) => {
                 <button
                   type="submit"
                   disabled={saving}
-                  className="px-6 py-3 rounded-xl bg-purple-600 hover:bg-purple-500 disabled:opacity-50 text-white font-mono text-xs font-bold uppercase tracking-wider transition-all shadow-lg shadow-purple-950 flex items-center gap-2 cursor-pointer"
+                  className="px-6 py-3 rounded-xl bg-gradient-to-r from-cyan-500 via-sky-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 disabled:opacity-50 text-slate-950 font-mono text-xs font-bold uppercase tracking-wider transition-all shadow-lg shadow-cyan-950/60 flex items-center gap-2 cursor-pointer border border-cyan-300/40"
                 >
                   {saving ? (
                     <>
-                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <Loader2 className="w-4 h-4 animate-spin text-slate-950" />
                       <span>Enregistrement...</span>
                     </>
                   ) : (
                     <>
-                      <Save className="w-4 h-4" />
+                      <Save className="w-4 h-4 text-slate-950 stroke-[2.5]" />
                       <span>Sauvegarder le Profil</span>
                     </>
                   )}
@@ -351,14 +351,14 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onNavigate }) => {
           </div>
 
           {/* Collapsible Supabase SQL Schema helper */}
-          <div className="rounded-2xl glass-panel border border-white/10 p-4 space-y-3">
+          <div className="rounded-2xl glass-panel border border-cyan-500/15 p-4 space-y-3">
             <button
               type="button"
               onClick={() => setShowSqlGuide(!showSqlGuide)}
               className="w-full flex items-center justify-between text-left cursor-pointer"
             >
-              <div className="flex items-center gap-2 text-xs font-mono text-purple-300 font-bold">
-                <Database className="w-4 h-4 text-purple-400" />
+              <div className="flex items-center gap-2 text-xs font-mono text-cyan-300 font-bold">
+                <Database className="w-4 h-4 text-cyan-400" />
                 <span>Optionnel : Schéma SQL Supabase pour persistance multi-appareils</span>
               </div>
               {showSqlGuide ? (
@@ -369,28 +369,28 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onNavigate }) => {
             </button>
 
             {showSqlGuide && (
-              <div className="pt-3 border-t border-white/10 space-y-3 animate-in fade-in">
+              <div className="pt-3 border-t border-cyan-500/15 space-y-3 animate-in fade-in">
                 <p className="text-xs text-slate-400 font-sans leading-relaxed">
                   Votre profil est actuellement sauvegardé automatiquement. Pour le répliquer sur tous vos appareils via votre base Supabase, vous pouvez exécuter ce script dans le <strong className="text-white">SQL Editor</strong> de Supabase :
                 </p>
 
                 <div className="relative">
-                  <pre className="p-3.5 rounded-xl bg-[#090912] border border-white/10 font-mono text-[11px] text-purple-200 overflow-x-auto leading-relaxed max-h-44">
+                  <pre className="p-3.5 rounded-xl bg-[#09111e] border border-cyan-500/20 font-mono text-[11px] text-cyan-200 overflow-x-auto leading-relaxed max-h-44">
                     {SUPABASE_SCHEMA_SQL}
                   </pre>
                   <button
                     type="button"
                     onClick={copySqlToClipboard}
-                    className="absolute top-2.5 right-2.5 flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-purple-600 hover:bg-purple-500 text-white font-mono text-[10px] font-bold transition-all shadow-md"
+                    className="absolute top-2.5 right-2.5 flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-950 font-mono text-[10px] font-bold transition-all shadow-md"
                   >
                     {copiedSql ? (
                       <>
-                        <CheckCircle2 className="w-3 h-3 text-emerald-300" />
+                        <CheckCircle2 className="w-3 h-3 text-emerald-950" />
                         <span>Copié !</span>
                       </>
                     ) : (
                       <>
-                        <Copy className="w-3 h-3" />
+                        <Copy className="w-3 h-3 text-slate-950" />
                         <span>Copier SQL</span>
                       </>
                     )}
