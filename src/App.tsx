@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Navbar } from './components/Navbar';
 import { Footer } from './components/Footer';
+import { AuthProvider } from './contexts/AuthContext';
+import { ProtectedRoute } from './components/ProtectedRoute';
 
 // All View Components
 import { HomeView } from './views/HomeView';
@@ -38,6 +40,13 @@ import { ProjectsView } from './views/ProjectsView';
 import { AboutView } from './views/AboutView';
 import { ContactView } from './views/ContactView';
 
+// Auth & Member Views
+import { LoginView } from './views/LoginView';
+import { RegisterView } from './views/RegisterView';
+import { ResetPasswordView } from './views/ResetPasswordView';
+import { ProfileView } from './views/ProfileView';
+import { DashboardView } from './views/DashboardView';
+
 export default function App() {
   const [currentRoute, setCurrentRoute] = useState<string>('home');
 
@@ -47,6 +56,19 @@ export default function App() {
       case '':
       case 'home':
         return 'home';
+      case 'dashboard':
+        return 'dashboard';
+      case 'profile':
+        return 'profile';
+      case 'login':
+      case 'signin':
+        return 'login';
+      case 'register':
+      case 'signup':
+        return 'register';
+      case 'reset-password':
+      case 'forgot-password':
+        return 'reset-password';
       case 'tools':
       case 'toolbox':
         return 'toolbox';
@@ -200,6 +222,24 @@ export default function App() {
     switch (active) {
       case 'home':
         return <HomeView onNavigate={navigate} />;
+      case 'login':
+        return <LoginView onNavigate={navigate} />;
+      case 'register':
+        return <RegisterView onNavigate={navigate} />;
+      case 'reset-password':
+        return <ResetPasswordView onNavigate={navigate} />;
+      case 'profile':
+        return (
+          <ProtectedRoute onNavigate={navigate}>
+            <ProfileView onNavigate={navigate} />
+          </ProtectedRoute>
+        );
+      case 'dashboard':
+        return (
+          <ProtectedRoute onNavigate={navigate}>
+            <DashboardView onNavigate={navigate} />
+          </ProtectedRoute>
+        );
       case 'toolbox':
         return <ToolboxView onNavigate={navigate} />;
       case 'speed-test':
@@ -272,14 +312,17 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-[#050508] telecom-grid flex flex-col text-slate-100 selection:bg-purple-600 selection:text-white">
-      <Navbar currentRoute={currentRoute} currentPath={currentRoute} onNavigate={navigate} />
+    <AuthProvider>
+      <div className="min-h-screen bg-[#050508] telecom-grid flex flex-col text-slate-100 selection:bg-purple-600 selection:text-white">
+        <Navbar currentRoute={currentRoute} currentPath={currentRoute} onNavigate={navigate} />
 
-      <main className="flex-1">
-        {renderCurrentView()}
-      </main>
+        <main className="flex-1">
+          {renderCurrentView()}
+        </main>
 
-      <Footer onNavigate={navigate} />
-    </div>
+        <Footer onNavigate={navigate} />
+      </div>
+    </AuthProvider>
   );
 }
+
