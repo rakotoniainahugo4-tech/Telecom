@@ -46,6 +46,9 @@ import { RegisterView } from './views/RegisterView';
 import { ResetPasswordView } from './views/ResetPasswordView';
 import { ProfileView } from './views/ProfileView';
 import { DashboardView } from './views/DashboardView';
+import { MyProgressView } from './views/MyProgressView';
+import { CourseDetailView } from './views/CourseDetailView';
+import { LessonView } from './views/LessonView';
 
 export default function App() {
   const [currentRoute, setCurrentRoute] = useState<string>('home');
@@ -58,6 +61,15 @@ export default function App() {
         return 'home';
       case 'dashboard':
         return 'dashboard';
+      case 'progress':
+      case 'my-learning':
+      case 'apprentissage':
+        return 'progress';
+      case 'course/voip':
+      case 'voip-course':
+        return 'course/voip';
+      case 'course/mpls':
+        return 'course/mpls';
       case 'profile':
         return 'profile';
       case 'login':
@@ -219,6 +231,30 @@ export default function App() {
 
   const renderCurrentView = () => {
     const active = normalizeRoute(currentRoute);
+
+    if (active.startsWith('course/')) {
+      const slug = active.replace('course/', '');
+      return (
+        <CourseDetailView
+          courseSlug={slug}
+          onNavigate={navigate}
+          onOpenLesson={(id) => navigate(`lesson/${id}`)}
+        />
+      );
+    }
+
+    if (active.startsWith('lesson/')) {
+      const lessonId = active.replace('lesson/', '');
+      return (
+        <LessonView
+          lessonId={lessonId}
+          onNavigate={navigate}
+          onSelectLesson={(id) => navigate(`lesson/${id}`)}
+          onBackToCourse={(slug) => navigate(`course/${slug}`)}
+        />
+      );
+    }
+
     switch (active) {
       case 'home':
         return <HomeView onNavigate={navigate} />;
@@ -237,7 +273,21 @@ export default function App() {
       case 'dashboard':
         return (
           <ProtectedRoute onNavigate={navigate}>
-            <DashboardView onNavigate={navigate} />
+            <DashboardView 
+              onNavigate={navigate}
+              onOpenCourse={(slug) => navigate(`course/${slug}`)}
+              onOpenLesson={(id) => navigate(`lesson/${id}`)}
+            />
+          </ProtectedRoute>
+        );
+      case 'progress':
+        return (
+          <ProtectedRoute onNavigate={navigate}>
+            <MyProgressView 
+              onNavigate={navigate}
+              onOpenCourse={(slug) => navigate(`course/${slug}`)}
+              onOpenLesson={(id) => navigate(`lesson/${id}`)}
+            />
           </ProtectedRoute>
         );
       case 'toolbox':

@@ -1,5 +1,7 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
+import { learningService, subscribeToProgress } from '../lib/learningService';
+import { CourseProgressSummary, UserLearningStats } from '../types/learning';
 import { 
   Radio, 
   Activity, 
@@ -20,27 +22,89 @@ import {
   Sparkles,
   TrendingUp,
   Clock,
-  ExternalLink
+  ExternalLink,
+  Check
 } from 'lucide-react';
 import { Badge } from '../components/Badge';
 
 interface DashboardViewProps {
   onNavigate: (route: string) => void;
+  onOpenCourse?: (courseSlug: string) => void;
+  onOpenLesson?: (lessonId: string) => void;
 }
 
-export const DashboardView: React.FC<DashboardViewProps> = ({ onNavigate }) => {
+export const DashboardView: React.FC<DashboardViewProps> = ({ 
+  onNavigate,
+  onOpenCourse,
+  onOpenLesson 
+}) => {
   const { user, profile } = useAuth();
+  const [coursesSummaries, setCoursesSummaries] = useState<CourseProgressSummary[]>([]);
+  const [userStats, setUserStats] = useState<UserLearningStats | null>(null);
+  const [isLoadingProgress, setIsLoadingProgress] = useState<boolean>(true);
 
+  const userId = user?.id || '';
   const userName = profile?.full_name || user?.email?.split('@')[0] || 'Ingénieur Télécom';
   const userRole = profile?.role || 'STUDENT';
   const speciality = profile?.speciality || 'Réseaux & Télécoms IP';
 
-  // Stats for the user dashboard overview
+  const loadProgressData = async () => {
+    if (!userId) {
+      setIsLoadingProgress(false);
+      return;
+    }
+    try {
+      const [summaries, stats] = await Promise.all([
+        learningService.getAllCoursesSummary(userId),
+        learningService.getUserStats(userId)
+      ]);
+      setCoursesSummaries(summaries);
+      setUserStats(stats);
+    } finally {
+      setIsLoadingProgress(false);
+    }
+  };
+
+  useEffect(() => {
+    loadProgressData();
+    const unsub = subscribeToProgress(() => {
+      loadProgressData();
+    });
+    return () => unsub();
+  }, [userId]);
+
+  const voipSummary = coursesSummaries.find(s => s.course.slug === 'voip') || coursesSummaries[0];
+
+  // Dynamic stats calculated specifically for this authenticated user
   const stats = [
-    { label: 'PROGRESSION GLOBALE', value: '68%', change: '+12% ce mois', icon: TrendingUp, color: 'text-purple-400' },
-    { label: 'COURS ACADEMY', value: '4 / 7 terminés', change: 'Topologie 100%', icon: BookOpen, color: 'text-cyan-400' },
-    { label: 'LABS PRATIQUES', value: '3 / 6 validés', change: 'MPLS Lab actif', icon: Network, color: 'text-emerald-400' },
-    { label: 'SCORE MOYEN QUIZ', value: '88%', change: 'Niveau Avancé', icon: Award, color: 'text-amber-400' },
+    { 
+      label: 'PROGRESSION GLOBALE', 
+      value: `${userStats?.global_progress_percent ?? 0}%`, 
+      change: `${userStats?.lessons_completed ?? 0} / ${userStats?.total_lessons_available ?? 10} leçons`, 
+      icon: TrendingUp, 
+      color: 'text-cyan-400' 
+    },
+    { 
+      label: 'COURS EN COURS', 
+      value: `${userStats?.courses_started ?? 0} / ${coursesSummaries.length || 2}`, 
+      change: `${userStats?.courses_completed ?? 0} terminé(s)`, 
+      icon: BookOpen, 
+      color: 'text-purple-400' 
+    },
+    { 
+      label: 'LABS PRATIQUES', 
+      value: `${userStats?.labs_completed ?? 0} / 6 validés`, 
+      change: 'MPLS Lab actif', 
+      icon: Network, 
+      color: 'text-emerald-400' 
+    },
+    { 
+      label: 'TEMPS ENREGISTRÉ', 
+      value: `~${userStats?.learning_hours ?? 0} h`, 
+      change: 'Progression Supabase', 
+      icon: Award, 
+      color: 'text-amber-400' 
+    },
   ];
 
   const quickTracks = [
@@ -110,18 +174,26 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onNavigate }) => {
 
           <div className="flex flex-wrap items-center gap-3">
             <button
-              onClick={() => onNavigate('profile')}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-cyan-950/40 hover:bg-cyan-950/70 text-slate-200 border border-cyan-500/20 text-xs font-mono font-bold transition-all"
+              onClick={() => onNavigate('progress')}
+              className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-cyan-950/50 hover:bg-cyan-950/80 text-cyan-300 border border-cyan-500/30 text-xs font-mono font-bold transition-all shadow-md"
             >
-              <User className="w-4 h-4 text-cyan-400" />
-              Éditer mon Profil
+              <TrendingUp className="w-4 h-4 text-cyan-400" />
+              Mon Apprentissage
             </button>
             <button
-              onClick={() => onNavigate('network-topology')}
+              onClick={() => {
+                if (voipSummary?.next_lesson && onOpenLesson) {
+                  onOpenLesson(voipSummary.next_lesson.id);
+                } else if (onOpenCourse) {
+                  onOpenCourse('voip');
+                } else {
+                  onNavigate('progress');
+                }
+              }}
               className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 via-sky-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-950 text-xs font-mono font-bold uppercase tracking-wider transition-all shadow-lg shadow-cyan-950/60 border border-cyan-300/40"
             >
               <Play className="w-4 h-4 text-slate-950 fill-slate-950" />
-              Reprendre le Cours
+              {voipSummary?.completed_lessons === 0 ? 'Démarrer VoIP' : 'Continuer VoIP'}
             </button>
           </div>
         </div>
@@ -149,6 +221,65 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onNavigate }) => {
           );
         })}
       </div>
+
+      {/* Personal Learning Focus Card */}
+      {voipSummary && (
+        <div className="rounded-2xl glass-panel-glow border border-cyan-500/30 p-6 space-y-4 bg-gradient-to-r from-[#091326] to-[#0b172a]">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="space-y-1.5">
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] font-mono uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-cyan-950 border border-cyan-500/30 text-cyan-300">
+                  {voipSummary.course.category}
+                </span>
+                <span className="text-xs font-mono text-slate-400">
+                  Formation Personnalisée
+                </span>
+              </div>
+              <h3 className="font-heading font-black text-xl text-white">
+                {voipSummary.course.title}
+              </h3>
+              {voipSummary.next_lesson && (
+                <p className="text-xs font-mono text-slate-300">
+                  Prochaine étape : <span className="text-cyan-300 font-bold">{voipSummary.next_lesson.title}</span>
+                </p>
+              )}
+            </div>
+
+            <div className="flex items-center gap-3 shrink-0">
+              <button
+                onClick={() => onOpenCourse ? onOpenCourse(voipSummary.course.slug) : onNavigate('progress')}
+                className="px-4 py-2 rounded-xl bg-cyan-950/60 hover:bg-cyan-950 border border-cyan-500/20 text-xs font-mono text-slate-300 transition-colors"
+              >
+                Sommaire du Cours
+              </button>
+              {voipSummary.next_lesson && (
+                <button
+                  onClick={() => onOpenLesson ? onOpenLesson(voipSummary.next_lesson!.id) : (onOpenCourse ? onOpenCourse(voipSummary.course.slug) : onNavigate('progress'))}
+                  className="flex items-center gap-2 px-4 py-2 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 text-xs font-mono font-bold transition-all shadow-md"
+                >
+                  <Play className="w-3.5 h-3.5 fill-current" />
+                  Continuer la leçon
+                </button>
+              )}
+            </div>
+          </div>
+
+          <div className="space-y-1.5 pt-2 border-t border-cyan-500/15">
+            <div className="flex items-center justify-between text-xs font-mono">
+              <span className="text-slate-400">Votre avancement personnel :</span>
+              <span className="text-cyan-300 font-bold">
+                {voipSummary.completed_lessons} / {voipSummary.total_lessons} leçons validées ({voipSummary.percent}%)
+              </span>
+            </div>
+            <div className="w-full h-2 rounded-full bg-slate-950 overflow-hidden border border-cyan-500/20">
+              <div 
+                className="h-full bg-gradient-to-r from-cyan-500 to-blue-500 rounded-full transition-all duration-500" 
+                style={{ width: `${voipSummary.percent}%` }} 
+              />
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* 3 Main Pillars Section */}
       <div className="space-y-4">

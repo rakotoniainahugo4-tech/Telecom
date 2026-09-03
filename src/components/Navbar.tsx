@@ -45,7 +45,10 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPath, currentRoute, onNav
 
   const navItems = [
     { label: 'HOME', path: '/', icon: Activity },
-    ...(user ? [{ label: 'DASHBOARD', path: '/dashboard', icon: LayoutDashboard }] : []),
+    ...(user ? [
+      { label: 'DASHBOARD', path: '/dashboard', icon: LayoutDashboard },
+      { label: 'APPRENTISSAGE', path: '/progress', icon: Award }
+    ] : []),
     { label: 'TOOLS', path: '/tools', icon: Wrench },
     { label: 'NETWORK LAB', path: '/network/mpls', icon: Network },
     { label: 'TELECOM', path: '/telecom/site', icon: Signal },
@@ -185,6 +188,14 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPath, currentRoute, onNav
                       >
                         <LayoutDashboard className="w-4 h-4 text-cyan-400" />
                         Tableau de Bord
+                      </button>
+
+                      <button
+                        onClick={() => handleNavClick('/progress')}
+                        className="w-full text-left px-4 py-2 text-xs font-mono text-slate-200 hover:bg-cyan-500/15 hover:text-cyan-300 flex items-center gap-2 transition-colors"
+                      >
+                        <Award className="w-4 h-4 text-cyan-400" />
+                        Mon Apprentissage
                       </button>
 
                       <button
