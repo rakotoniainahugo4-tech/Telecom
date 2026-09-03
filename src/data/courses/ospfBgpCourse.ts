@@ -1,7 +1,7 @@
 import { Course, Chapter, Lesson } from '../../types/learning';
 
 export const OSPF_BGP_COURSE: Course = {
-  id: 'c3000000-0000-4000-8000-000000000003',
+  id: 'c7000000-0000-4000-8000-000000000007',
   title: 'Routage Dynamique Avancé : OSPF & BGP',
   slug: 'ospf-bgp',
   description: 'Apprenez le fonctionnement des protocoles de routage à état de liens (OSPF multi-aires, types de LSA) et le protocole de routage inter-domaines de l\'Internet mondial (BGP, peering, ASN, best path algorithm).',
@@ -44,8 +44,8 @@ Vous apprendrez la mécanique exacte de l'algorithme SPF de Dijkstra, la modéli
 
 export const OSPF_BGP_CHAPTERS: Chapter[] = [
   {
-    id: 'ch300000-0000-4000-8000-000000000001',
-    course_id: 'c3000000-0000-4000-8000-000000000003',
+    id: 'ch700000-0000-4000-8000-000000000001',
+    course_id: 'c7000000-0000-4000-8000-000000000007',
     chapter_number: 1,
     title: 'Chapitre 1 — Routage Intra-Domaine : OSPFv2 / OSPFv3',
     description: 'Algorithme SPF de Dijkstra, formation des adjacences, types d\'aires et LSA 1 à 7.',
@@ -59,8 +59,8 @@ export const OSPF_BGP_CHAPTERS: Chapter[] = [
     position: 1,
   },
   {
-    id: 'ch300000-0000-4000-8000-000000000002',
-    course_id: 'c3000000-0000-4000-8000-000000000003',
+    id: 'ch700000-0000-4000-8000-000000000002',
+    course_id: 'c7000000-0000-4000-8000-000000000007',
     chapter_number: 2,
     title: 'Chapitre 2 — Routage Inter-Domaines : BGP-4 & Peering',
     description: 'Table de routage DFZ mondiale, attributs de chemin (Weight, Local_Pref, AS-Path, MED) et filtrage des préfixes.',
@@ -77,9 +77,9 @@ export const OSPF_BGP_CHAPTERS: Chapter[] = [
 
 export const OSPF_BGP_LESSONS: Lesson[] = [
   {
-    id: 'l3000001-0000-4000-8000-000000000001',
-    chapter_id: 'ch300000-0000-4000-8000-000000000001',
-    course_id: 'c3000000-0000-4000-8000-000000000003',
+    id: 'l7000001-0000-4000-8000-000000000001',
+    chapter_id: 'ch700000-0000-4000-8000-000000000001',
+    course_id: 'c7000000-0000-4000-8000-000000000007',
     title: "1. OSPF Avancé : Calcul SPF & Analyse de la LSDB",
     slug: 'ospf-avance-spf-lsdb',
     duration_minutes: 50,
@@ -110,9 +110,9 @@ Contrairement aux protocoles à vecteur de distance qui s'échangent des rumeurs
 Chaque routeur décrit l'état de ses propres liens dans des paquets **LSA (Link-State Advertisement)**.`
   },
   {
-    id: 'l3000001-0000-4000-8000-000000000002',
-    chapter_id: 'ch300000-0000-4000-8000-000000000001',
-    course_id: 'c3000000-0000-4000-8000-000000000003',
+    id: 'l7000001-0000-4000-8000-000000000002',
+    chapter_id: 'ch700000-0000-4000-8000-000000000001',
+    course_id: 'c7000000-0000-4000-8000-000000000007',
     title: "2. Types d'Aires Spéciales : Stub, Totally Stubby & NSSA",
     slug: 'types-aires-speciales-ospf',
     duration_minutes: 50,
@@ -144,9 +144,9 @@ Dans une entreprise multisite, les petits routeurs d'agence n'ont pas besoin de 
 Les **Aires Spéciales** réduisent drastiquement la taille de la table de routage et de la LSDB.`
   },
   {
-    id: 'l3000001-0000-4000-8000-000000000003',
-    chapter_id: 'ch300000-0000-4000-8000-000000000001',
-    course_id: 'c3000000-0000-4000-8000-000000000003',
+    id: 'l7000001-0000-4000-8000-000000000003',
+    chapter_id: 'ch700000-0000-4000-8000-000000000001',
+    course_id: 'c7000000-0000-4000-8000-000000000007',
     title: "3. OSPFv3 pour IPv6 et Convergence Rapide (BFD)",
     slug: 'ospfv3-ipv6-bfd',
     duration_minutes: 45,
@@ -178,9 +178,9 @@ Avec l'avènement du Cloud et de la voix interactive, attendre 40 secondes (Dead
 L'intégration de **BFD (Bidirectional Forwarding Detection - RFC 5880)** avec OSPF permet de converger en moins de **150 millisecondes**.`
   },
   {
-    id: 'l3000001-0000-4000-8000-000000000004',
-    chapter_id: 'ch300000-0000-4000-8000-000000000002',
-    course_id: 'c3000000-0000-4000-8000-000000000003',
+    id: 'l7000001-0000-4000-8000-000000000004',
+    chapter_id: 'ch700000-0000-4000-8000-000000000002',
+    course_id: 'c7000000-0000-4000-8000-000000000007',
     title: "4. Fondements de BGP-4 : Systèmes Autonomes (AS) & Peering",
     slug: 'fondements-bgp4-as-peering',
     duration_minutes: 50,
@@ -213,9 +213,9 @@ Internet n'est pas un réseau unique géré par une entité centrale : c'est une
 Le seul langage qu'ils utilisent tous pour s'échanger leurs adresses est **BGP-4 (Border Gateway Protocol Version 4 - RFC 4271)**.`
   },
   {
-    id: 'l3000001-0000-4000-8000-000000000005',
-    chapter_id: 'ch300000-0000-4000-8000-000000000002',
-    course_id: 'c3000000-0000-4000-8000-000000000003',
+    id: 'l7000001-0000-4000-8000-000000000005',
+    chapter_id: 'ch700000-0000-4000-8000-000000000002',
+    course_id: 'c7000000-0000-4000-8000-000000000007',
     title: "5. L'Algorithme BGP Best Path & Manipulation des Attributs",
     slug: 'algorithme-bgp-best-path-attributs',
     duration_minutes: 55,
@@ -256,9 +256,9 @@ Quand un routeur BGP reçoit plusieurs annonces pour le même préfixe réseau, 
 9. **BGP Router ID le plus bas** (Critère de départage final).`
   },
   {
-    id: 'l3000001-0000-4000-8000-000000000006',
-    chapter_id: 'ch300000-0000-4000-8000-000000000002',
-    course_id: 'c3000000-0000-4000-8000-000000000003',
+    id: 'l7000001-0000-4000-8000-000000000006',
+    chapter_id: 'ch700000-0000-4000-8000-000000000002',
+    course_id: 'c7000000-0000-4000-8000-000000000007',
     title: "6. Filtrage BGP, Prefix-Lists & Sécurité RPKI",
     slug: 'filtrage-bgp-prefix-lists-rpki',
     duration_minutes: 50,

@@ -1,7 +1,7 @@
 import { Course, Chapter, Lesson } from '../../types/learning';
 
 export const NETWORK_TOPOLOGY_COURSE: Course = {
-  id: 'c4000000-0000-4000-8000-000000000004',
+  id: 'c8000000-0000-4000-8000-000000000008',
   title: 'Topologie du Transport Télécom de Bout en Bout',
   slug: 'network-topology',
   description: 'Parcours complet en 7 étapes : de l\'accès FTTH/PON et radio mobile 4G/5G, jusqu\'au Datacenter Cloud via l\'agrégation métropolitaine, le cœur MPLS et le transit BGP.',
@@ -45,8 +45,8 @@ export const NETWORK_TOPOLOGY_COURSE: Course = {
 
 export const NETWORK_TOPOLOGY_CHAPTERS: Chapter[] = [
   {
-    id: 'ch400000-0000-4000-8000-000000000001',
-    course_id: 'c4000000-0000-4000-8000-000000000004',
+    id: 'ch800000-0000-4000-8000-000000000001',
+    course_id: 'c8000000-0000-4000-8000-000000000008',
     chapter_number: 1,
     title: 'Chapitre 1 — La Boucle Locale & L\'Accès Abonnés',
     description: 'Terminaux abonnés, CPE, ONT FTTH GPON/XGS-PON et antennes relais cellulaires.',
@@ -60,8 +60,8 @@ export const NETWORK_TOPOLOGY_CHAPTERS: Chapter[] = [
     position: 1,
   },
   {
-    id: 'ch400000-0000-4000-8000-000000000002',
-    course_id: 'c4000000-0000-4000-8000-000000000004',
+    id: 'ch800000-0000-4000-8000-000000000002',
+    course_id: 'c8000000-0000-4000-8000-000000000008',
     chapter_number: 2,
     title: 'Chapitre 2 — Cœur Opérateur & Interconnexion Mondiale',
     description: 'Agrégation métropolitaine, passerelles BNG, backbone MPLS, transit Tier-1 et Datacenter Cloud.',
@@ -78,9 +78,9 @@ export const NETWORK_TOPOLOGY_CHAPTERS: Chapter[] = [
 
 export const NETWORK_TOPOLOGY_LESSONS: Lesson[] = [
   {
-    id: 'l4000001-0000-4000-8000-000000000001',
-    chapter_id: 'ch400000-0000-4000-8000-000000000001',
-    course_id: 'c4000000-0000-4000-8000-000000000004',
+    id: 'l8000001-0000-4000-8000-000000000001',
+    chapter_id: 'ch800000-0000-4000-8000-000000000001',
+    course_id: 'c8000000-0000-4000-8000-000000000008',
     title: "1. La Boucle Locale Optique FTTH (GPON & XGS-PON)",
     slug: 'boucle-locale-optique-ftth-gpon',
     duration_minutes: 45,
@@ -113,9 +113,9 @@ La technologie **PON (Passive Optical Network)** est le pilier du raccordement e
 Contrairement à l'ADSL sur cuivre qui souffrait d'atténuation rapide avec la distance, la fibre optique monomode (G.652/G.657) permet de couvrir des distances de 20 kilomètres sans répéteur.`
   },
   {
-    id: 'l4000001-0000-4000-8000-000000000002',
-    chapter_id: 'ch400000-0000-4000-8000-000000000001',
-    course_id: 'c4000000-0000-4000-8000-000000000004',
+    id: 'l8000001-0000-4000-8000-000000000002',
+    chapter_id: 'ch800000-0000-4000-8000-000000000001',
+    course_id: 'c8000000-0000-4000-8000-000000000008',
     title: "2. L'Accès Radio Mobile 4G/5G (Fronthaul & Backhaul)",
     slug: 'acces-radio-mobile-4g-5g',
     duration_minutes: 45,
@@ -147,9 +147,9 @@ Quand vous utilisez votre smartphone, le signal radio franchit les airs sur quel
 Le transport mobile moderne exige une synchronisation temporelle ultra-précise (au nanoseconde près) pour permettre le passage transparent d'une antenne à l'autre (Handover).`
   },
   {
-    id: 'l4000001-0000-4000-8000-000000000003',
-    chapter_id: 'ch400000-0000-4000-8000-000000000002',
-    course_id: 'c4000000-0000-4000-8000-000000000004',
+    id: 'l8000001-0000-4000-8000-000000000003',
+    chapter_id: 'ch800000-0000-4000-8000-000000000002',
+    course_id: 'c8000000-0000-4000-8000-000000000008',
     title: "3. La Passerelle BNG (Broadband Network Gateway)",
     slug: 'passerelle-bng-ipoe-pppoe',
     duration_minutes: 50,
@@ -181,9 +181,9 @@ Le **BNG (Broadband Network Gateway)** est l'équipement frontière qui transfor
 Sans BNG, une box internet ne peut pas obtenir d'adresse IP ni accéder au reste du réseau.`
   },
   {
-    id: 'l4000001-0000-4000-8000-000000000004',
-    chapter_id: 'ch400000-0000-4000-8000-000000000002',
-    course_id: 'c4000000-0000-4000-8000-000000000004',
+    id: 'l8000001-0000-4000-8000-000000000004',
+    chapter_id: 'ch800000-0000-4000-8000-000000000002',
+    course_id: 'c8000000-0000-4000-8000-000000000008',
     title: "4. Cœur de Réseau National (Backbone) & Points d'Échange (IXP)",
     slug: 'backbone-national-points-echange-ixp',
     duration_minutes: 50,
@@ -214,9 +214,9 @@ Une fois agrégé par le BNG, le trafic emprunte les autoroutes nationales de fi
 Pour relier Paris à Marseille ou New York à Londres, les opérateurs utilisent le **DWDM (Dense Wavelength Division Multiplexing)**, capable d'atteindre plus de 40 Térabits par seconde par fibre !`
   },
   {
-    id: 'l4000001-0000-4000-8000-000000000005',
-    chapter_id: 'ch400000-0000-4000-8000-000000000002',
-    course_id: 'c4000000-0000-4000-8000-000000000004',
+    id: 'l8000001-0000-4000-8000-000000000005',
+    chapter_id: 'ch800000-0000-4000-8000-000000000002',
+    course_id: 'c8000000-0000-4000-8000-000000000008',
     title: "5. L'Entrée dans le Datacenter Cloud : Spine & Leaf",
     slug: 'entree-datacenter-spine-leaf',
     duration_minutes: 50,

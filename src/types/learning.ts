@@ -185,15 +185,35 @@ export interface ChapterProgressSummary {
   percent: number;
 }
 
+export type CourseProgressStatus = 'not_started' | 'in_progress' | 'completed' | 'no_lessons';
+
 export interface CourseProgressSummary {
   course: Course;
   total_lessons: number;
   completed_lessons: number;
   percent: number;
   is_completed: boolean;
+  status: CourseProgressStatus;
+  status_label: 'Non commencé' | 'En cours' | 'Terminé' | 'Contenu en cours de préparation';
+  action_label: 'Commencer la formation' | 'Continuer la formation' | 'Revoir la formation' | 'Contenu en cours de préparation';
   last_lesson?: Lesson;
   next_lesson?: Lesson;
   chapter_summaries: ChapterProgressSummary[];
+}
+
+export interface CourseAuditResult {
+  course_id: string;
+  course_title: string;
+  slug: string;
+  published: boolean;
+  chapters_count: number;
+  lessons_count: number;
+  completed_lessons: number;
+  progress_percent: number;
+  status: CourseProgressStatus;
+  status_label: string;
+  integrity_state: 'OK' | 'ERREUR DE DONNÉES' | 'CONTENU EN PRÉPARATION';
+  details: string;
 }
 
 export interface UserLearningStats {

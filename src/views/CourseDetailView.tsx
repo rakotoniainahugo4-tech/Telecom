@@ -173,15 +173,24 @@ export const CourseDetailView: React.FC<CourseDetailViewProps> = ({
             </div>
 
             {/* Action CTA Button */}
-            {next_lesson && (
+            {total_lessons > 0 && next_lesson ? (
               <button
                 onClick={() => onOpenLesson(next_lesson.id)}
                 className="flex items-center gap-2.5 px-6 py-3 rounded-xl bg-gradient-to-r from-cyan-500 via-sky-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-950 text-xs font-mono font-bold uppercase tracking-wider transition-all shadow-lg shadow-cyan-950/60 border border-cyan-300/40 hover:scale-[1.02]"
               >
                 <Play className="w-4 h-4 text-slate-950 fill-slate-950" />
-                {completed_lessons === 0 ? 'Commencer la formation' : 'Continuer la formation'}
+                {is_completed && completed_lessons === total_lessons
+                  ? 'Revoir la formation'
+                  : completed_lessons === 0
+                  ? 'Commencer la formation'
+                  : 'Continuer la formation'}
               </button>
-            )}
+            ) : total_lessons === 0 ? (
+              <span className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-900 border border-amber-500/30 text-amber-300 text-xs font-mono">
+                <Clock className="w-4 h-4 text-amber-400" />
+                Contenu en cours de préparation
+              </span>
+            ) : null}
           </div>
 
           <div>
@@ -200,7 +209,7 @@ export const CourseDetailView: React.FC<CourseDetailViewProps> = ({
                 <span className="text-slate-400 uppercase font-bold">Progression individuelle :</span>
                 <span className="text-cyan-300 font-bold">{completed_lessons} / {total_lessons} leçons terminées</span>
               </div>
-              <span className={`font-black text-sm ${is_completed ? 'text-emerald-400' : 'text-cyan-300'}`}>
+              <span className={`font-black text-sm ${is_completed && total_lessons > 0 ? 'text-emerald-400' : 'text-cyan-300'}`}>
                 {percent}%
               </span>
             </div>
@@ -209,7 +218,7 @@ export const CourseDetailView: React.FC<CourseDetailViewProps> = ({
             <div className="w-full h-2.5 rounded-full bg-slate-950 overflow-hidden border border-cyan-500/20">
               <div
                 className={`h-full transition-all duration-500 rounded-full ${
-                  is_completed
+                  is_completed && total_lessons > 0
                     ? 'bg-gradient-to-r from-emerald-500 to-teal-400 shadow-[0_0_12px_rgba(16,185,129,0.5)]'
                     : 'bg-gradient-to-r from-cyan-500 via-sky-400 to-blue-500 shadow-[0_0_12px_rgba(6,182,212,0.4)]'
                 }`}
@@ -218,17 +227,22 @@ export const CourseDetailView: React.FC<CourseDetailViewProps> = ({
             </div>
 
             <div className="flex flex-wrap items-center justify-between gap-2 pt-1">
-              {next_lesson && !is_completed ? (
-                <p className="text-xs font-mono text-slate-400 flex items-center gap-1.5">
-                  <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
-                  Prochaine leçon : <button onClick={() => onOpenLesson(next_lesson.id)} className="text-cyan-300 hover:underline font-semibold">{next_lesson.title}</button>
-                </p>
-              ) : (
+              {total_lessons === 0 ? (
+                <div className="flex items-center gap-2 text-xs font-mono text-amber-400">
+                  <Clock className="w-4 h-4" />
+                  <span>Contenu en cours de préparation — Les leçons de ce module seront bientôt publiées.</span>
+                </div>
+              ) : is_completed && total_lessons > 0 && completed_lessons === total_lessons ? (
                 <div className="flex items-center gap-2 text-xs font-mono text-emerald-400">
                   <CheckCircle2 className="w-4 h-4" />
                   <span>Félicitations ! Vous avez validé l'intégralité de ce cursus.</span>
                 </div>
-              )}
+              ) : next_lesson ? (
+                <p className="text-xs font-mono text-slate-400 flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
+                  {completed_lessons === 0 ? 'Première leçon :' : 'Prochaine leçon :'} <button onClick={() => onOpenLesson(next_lesson.id)} className="text-cyan-300 hover:underline font-semibold">{next_lesson.title}</button>
+                </p>
+              ) : null}
 
               <span className="text-[11px] font-mono text-slate-400">
                 Calculé dynamiquement selon vos réussites

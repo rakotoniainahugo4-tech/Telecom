@@ -66,9 +66,9 @@ export const MyProgressView: React.FC<MyProgressViewProps> = ({
     return () => unsub();
   }, [userId]);
 
-  const inProgressCourses = summaries.filter(s => s.completed_lessons > 0 && !s.is_completed);
-  const completedCourses = summaries.filter(s => s.is_completed);
-  const notStartedCourses = summaries.filter(s => s.completed_lessons === 0);
+  const inProgressCourses = summaries.filter(s => s.completed_lessons > 0 && !s.is_completed && s.total_lessons > 0);
+  const completedCourses = summaries.filter(s => s.is_completed && s.total_lessons > 0 && s.completed_lessons === s.total_lessons);
+  const notStartedCourses = summaries.filter(s => s.completed_lessons === 0 && s.total_lessons > 0);
 
   const handleCopySql = () => {
     const sqlText = `-- TELECOM LAB : Exécutez ce script dans Supabase SQL Editor

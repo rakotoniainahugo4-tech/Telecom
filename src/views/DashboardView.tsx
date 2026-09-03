@@ -515,7 +515,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                         className="flex-1 py-2 px-3 rounded-xl bg-gradient-to-r from-cyan-500 to-sky-600 hover:from-cyan-400 hover:to-sky-500 text-slate-950 text-xs font-mono font-black transition-all flex items-center justify-center gap-1.5 shadow-md shadow-cyan-950"
                       >
                         <Play className="w-3.5 h-3.5 fill-current" />
-                        <span>Continuer</span>
+                        <span>{isFinished ? 'Revoir' : 'Continuer'}</span>
                       </button>
                     </div>
                   </div>
@@ -624,19 +624,24 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredCourses.map((summary) => {
               const course = summary.course;
-              const hasProgress = summary.completed_lessons > 0;
-              const isFinished = summary.is_completed;
+              const hasLessons = summary.total_lessons > 0;
+              const hasProgress = summary.completed_lessons > 0 && hasLessons;
+              const isFinished = summary.is_completed && hasLessons;
               const nextLesson = summary.next_lesson || course.chapters?.[0]?.lessons?.[0];
               const hasImgError = imgErrorMap[course.id];
 
               // Individual user status label
-              const statusLabel = isFinished 
+              const statusLabel = !hasLessons
+                ? 'En préparation'
+                : isFinished 
                 ? 'Terminé' 
                 : hasProgress 
                 ? 'En cours' 
                 : 'Non commencé';
 
-              const statusColor = isFinished 
+              const statusColor = !hasLessons
+                ? 'text-amber-400 bg-amber-950/60 border-amber-500/40'
+                : isFinished 
                 ? 'text-emerald-400 bg-emerald-950/60 border-emerald-500/40' 
                 : hasProgress 
                 ? 'text-cyan-300 bg-cyan-950/80 border-cyan-500/40' 
@@ -699,7 +704,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                     <div className="space-y-2 pt-3 border-t border-cyan-500/15">
                       <div className="flex items-center justify-between text-xs font-mono">
                         <span className="text-slate-400">
-                          {course.chapters?.length || course.chapters_count || 3} chapitres &bull; {summary.total_lessons} leçons
+                          {course.chapters?.length || course.chapters_count || 0} chapitres &bull; {summary.total_lessons} leçons
                         </span>
                         <span className="text-slate-400">
                           {summary.completed_lessons} validée(s)
@@ -727,16 +732,21 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
                       <button
                         onClick={() => {
-                          if (nextLesson) {
+                          if (hasLessons && nextLesson) {
                             handleLaunchLesson(nextLesson.id);
                           } else {
                             handleLaunchCourse(course.slug);
                           }
                         }}
-                        className="flex-1 py-2 px-3 rounded-xl bg-gradient-to-r from-cyan-500 to-sky-600 hover:from-cyan-400 hover:to-sky-500 text-slate-950 text-xs font-mono font-bold transition-all shadow-md shadow-cyan-950 flex items-center justify-center gap-1.5"
+                        disabled={!hasLessons}
+                        className={`flex-1 py-2 px-3 rounded-xl text-xs font-mono font-bold transition-all shadow-md flex items-center justify-center gap-1.5 ${
+                          !hasLessons
+                            ? 'bg-slate-900 border border-amber-500/30 text-amber-400/80 cursor-not-allowed'
+                            : 'bg-gradient-to-r from-cyan-500 to-sky-600 hover:from-cyan-400 hover:to-sky-500 text-slate-950 shadow-cyan-950'
+                        }`}
                       >
                         <Play className="w-3.5 h-3.5 fill-current" />
-                        <span>{isFinished ? 'Revoir' : hasProgress ? 'Continuer' : 'Commencer'}</span>
+                        <span>{!hasLessons ? 'En préparation' : isFinished ? 'Revoir' : hasProgress ? 'Continuer' : 'Commencer'}</span>
                       </button>
                     </div>
                   </div>

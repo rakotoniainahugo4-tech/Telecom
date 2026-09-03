@@ -1,5 +1,5 @@
 import { supabase, isSupabaseConfigured } from './supabase';
-import { Course, Chapter, Lesson, UserProgress, CourseProgressSummary, UserLearningStats, ChapterProgressSummary } from '../types/learning';
+import { Course, Chapter, Lesson, UserProgress, CourseProgressSummary, UserLearningStats, ChapterProgressSummary, CourseAuditResult, CourseProgressStatus } from '../types/learning';
 import { SEED_COURSES, SEED_CHAPTERS, SEED_LESSONS } from '../data/coursesSeedData';
 
 // User progress storage prefix strictly partitioned by userId
@@ -46,8 +46,10 @@ export class LearningService {
   // Local cache per user
   private getLocalUserProgress(userId: string): Record<string, UserProgress> {
     try {
-      const raw = localStorage.getItem(`${USER_PROGRESS_LOCAL_KEY_PREFIX}${userId}`);
-      if (raw) return JSON.parse(raw);
+      if (typeof window !== 'undefined' && window.localStorage) {
+        const raw = window.localStorage.getItem(`${USER_PROGRESS_LOCAL_KEY_PREFIX}${userId}`);
+        if (raw) return JSON.parse(raw);
+      }
     } catch {
       // ignore
     }
@@ -56,7 +58,9 @@ export class LearningService {
 
   private saveLocalUserProgress(userId: string, progressMap: Record<string, UserProgress>) {
     try {
-      localStorage.setItem(`${USER_PROGRESS_LOCAL_KEY_PREFIX}${userId}`, JSON.stringify(progressMap));
+      if (typeof window !== 'undefined' && window.localStorage) {
+        window.localStorage.setItem(`${USER_PROGRESS_LOCAL_KEY_PREFIX}${userId}`, JSON.stringify(progressMap));
+      }
     } catch {
       // ignore
     }
@@ -64,8 +68,10 @@ export class LearningService {
 
   private getLocalEnrollments(userId: string): string[] {
     try {
-      const raw = localStorage.getItem(`${ENROLLMENT_LOCAL_KEY_PREFIX}${userId}`);
-      if (raw) return JSON.parse(raw);
+      if (typeof window !== 'undefined' && window.localStorage) {
+        const raw = window.localStorage.getItem(`${ENROLLMENT_LOCAL_KEY_PREFIX}${userId}`);
+        if (raw) return JSON.parse(raw);
+      }
     } catch {
       // ignore
     }
@@ -74,7 +80,9 @@ export class LearningService {
 
   private saveLocalEnrollments(userId: string, courseIds: string[]) {
     try {
-      localStorage.setItem(`${ENROLLMENT_LOCAL_KEY_PREFIX}${userId}`, JSON.stringify(courseIds));
+      if (typeof window !== 'undefined' && window.localStorage) {
+        window.localStorage.setItem(`${ENROLLMENT_LOCAL_KEY_PREFIX}${userId}`, JSON.stringify(courseIds));
+      }
     } catch {
       // ignore
     }
@@ -117,29 +125,161 @@ export class LearningService {
         .select('*')
         .order('position', { ascending: true });
 
+      const chaptersToUse = (dbChapters && dbChapters.length > 0) ? (dbChapters as Chapter[]) : SEED_CHAPTERS;
+      const lessonsToUse = (dbLessons && dbLessons.length > 0) ? (dbLessons as Lesson[]) : SEED_LESSONS;
+
       return this.buildCoursesWithTree(
         dbCourses as Course[],
-        (dbChapters || SEED_CHAPTERS) as Chapter[],
-        (dbLessons || SEED_LESSONS) as Lesson[]
+        chaptersToUse,
+        lessonsToUse
       );
     } catch {
       return this.buildCoursesWithTree(SEED_COURSES, SEED_CHAPTERS, SEED_LESSONS);
     }
   }
 
+  private findSeedCourse(course: Course): Course | undefined {
+    // 1. Direct slug match
+    const bySlug = SEED_COURSES.find((c) => c.slug === course.slug);
+    if (bySlug) return bySlug;
+
+    // 2. Direct ID match
+    const byId = SEED_COURSES.find((c) => c.id === course.id);
+    if (byId) return byId;
+
+    // 3. Known Supabase slug aliases
+    const ALIAS_MAP: Record<string, string> = {
+      'fibre-optique-ftth-transmission': 'transmission-fibre-optique',
+      'reseaux-mobiles-4g-5g': 'reseaux-mobiles-cellulaires',
+      'automation-reseau-linux-devops': 'automation-reseau-linux-ingenieurs',
+      'reseaux-ip-routage-avance': 'ingenierie-ip-routage-avance',
+      'architecture-ip-mpls': 'architectures-ip-mpls-l3vpn-l2vpn',
+      'voip-asterisk-freepbx-sip': 'telephonie-ip-voip-asterisk-freepbx',
+    };
+    if (ALIAS_MAP[course.slug]) {
+      const byAlias = SEED_COURSES.find((c) => c.slug === ALIAS_MAP[course.slug]);
+      if (byAlias) return byAlias;
+    }
+
+    // 4. Keyword fuzzy match
+    const slugLower = (course.slug || '').toLowerCase();
+    const titleLower = (course.title || '').toLowerCase();
+    if (slugLower.includes('fibre') || titleLower.includes('fibre')) {
+      return SEED_COURSES.find((c) => c.slug === 'transmission-fibre-optique');
+    }
+    if (slugLower.includes('mobile') || slugLower.includes('5g') || titleLower.includes('mobile') || titleLower.includes('5g')) {
+      return SEED_COURSES.find((c) => c.slug === 'reseaux-mobiles-cellulaires');
+    }
+    if (slugLower.includes('automation') || slugLower.includes('devops') || titleLower.includes('automation')) {
+      return SEED_COURSES.find((c) => c.slug === 'automation-reseau-linux-ingenieurs');
+    }
+    if (slugLower.includes('voip') || slugLower.includes('sip') || titleLower.includes('voip') || titleLower.includes('sip')) {
+      return SEED_COURSES.find((c) => c.slug === 'telephonie-ip-voip-asterisk-freepbx');
+    }
+    if (slugLower.includes('mpls') || titleLower.includes('mpls')) {
+      return SEED_COURSES.find((c) => c.slug === 'architectures-ip-mpls-l3vpn-l2vpn');
+    }
+    if (slugLower.includes('ip') || slugLower.includes('routage') || titleLower.includes('routage')) {
+      return SEED_COURSES.find((c) => c.slug === 'ingenierie-ip-routage-avance');
+    }
+
+    return undefined;
+  }
+
   private buildCoursesWithTree(courses: Course[], chapters: Chapter[], lessons: Lesson[]): Course[] {
-    return courses.map((course) => {
-      const courseChapters = chapters
+    const processedCourses = courses.map((course) => {
+      let courseChapters = (chapters || [])
         .filter((ch) => ch.course_id === course.id)
         .sort((a, b) => a.position - b.position)
         .map((ch) => {
-          const chapterLessons = lessons
+          const chapterLessons = (lessons || [])
             .filter((l) => l.chapter_id === ch.id)
             .sort((a, b) => a.position - b.position);
-          return { ...ch, lessons: chapterLessons };
+          return { ...ch, lessons: chapterLessons, lessons_count: chapterLessons.length };
         });
-      return { ...course, chapters: courseChapters };
+
+      // Resilient fallback: If database chapters or lessons are empty or incomplete for this course,
+      // fallback to the rich seed chapters and lessons so that no course has empty chapters or 0/0
+      const seedMatch = this.findSeedCourse(course);
+      const totalLessonsFound = courseChapters.reduce((acc, ch) => acc + (ch.lessons?.length || 0), 0);
+
+      if (courseChapters.length === 0 || totalLessonsFound === 0) {
+        if (seedMatch) {
+          const fallbackChapters = (seedMatch.chapters || SEED_CHAPTERS.filter((ch) => ch.course_id === seedMatch.id))
+            .map((ch) => {
+              const chLessons = ch.lessons || SEED_LESSONS.filter((l) => l.chapter_id === ch.id);
+              return { ...ch, course_id: course.id, lessons: chLessons, lessons_count: chLessons.length };
+            });
+          if (fallbackChapters.length > 0) {
+            courseChapters = fallbackChapters;
+          }
+        }
+      } else if (seedMatch) {
+        // If some chapters in DB are empty skeletons (0 lessons), hydrate from seed
+        const seedChs = (seedMatch.chapters || SEED_CHAPTERS.filter((ch) => ch.course_id === seedMatch.id));
+        courseChapters = courseChapters.map((ch, idx) => {
+          if (!ch.lessons || ch.lessons.length === 0) {
+            const matchingSeedCh = seedChs[idx] || seedChs.find((sc) => sc.title.toLowerCase().includes(ch.title.toLowerCase()));
+            if (matchingSeedCh) {
+              const chLessons = matchingSeedCh.lessons || SEED_LESSONS.filter((l) => l.chapter_id === matchingSeedCh.id);
+              return { ...ch, lessons: chLessons, lessons_count: chLessons.length };
+            }
+          }
+          return ch;
+        });
+
+        // If DB is missing higher chapters present in seed, seamlessly append them
+        if (seedChs.length > courseChapters.length) {
+          const missingChs = seedChs.slice(courseChapters.length).map((ch) => {
+            const chLessons = ch.lessons || SEED_LESSONS.filter((l) => l.chapter_id === ch.id);
+            return { ...ch, course_id: course.id, lessons: chLessons, lessons_count: chLessons.length };
+          });
+          courseChapters = [...courseChapters, ...missingChs];
+        }
+      }
+
+      const totalLessons = courseChapters.reduce((acc, ch) => acc + (ch.lessons?.length || 0), 0);
+
+      return {
+        ...course,
+        chapters: courseChapters,
+        chapters_count: courseChapters.length,
+        lessons_count: totalLessons,
+      };
     });
+
+    // Also include any seed courses that are not yet in the DB so the full catalogue is available
+    const existingSlugs = new Set(processedCourses.map((c) => c.slug));
+    const additionalCourses: Course[] = [];
+
+    for (const seedCourse of SEED_COURSES) {
+      const aliasKey = Object.entries({
+        'fibre-optique-ftth-transmission': 'transmission-fibre-optique',
+        'reseaux-mobiles-4g-5g': 'reseaux-mobiles-cellulaires',
+        'automation-reseau-linux-devops': 'automation-reseau-linux-ingenieurs',
+        'reseaux-ip-routage-avance': 'ingenierie-ip-routage-avance',
+        'architecture-ip-mpls': 'architectures-ip-mpls-l3vpn-l2vpn',
+        'voip-asterisk-freepbx-sip': 'telephonie-ip-voip-asterisk-freepbx',
+      }).find(([_, target]) => target === seedCourse.slug)?.[0];
+
+      if (!existingSlugs.has(seedCourse.slug) && (!aliasKey || !existingSlugs.has(aliasKey))) {
+        const seedChapters = (seedCourse.chapters || SEED_CHAPTERS.filter((ch) => ch.course_id === seedCourse.id))
+          .map((ch) => {
+            const chLessons = ch.lessons || SEED_LESSONS.filter((l) => l.chapter_id === ch.id);
+            return { ...ch, lessons: chLessons, lessons_count: chLessons.length };
+          });
+        const seedTotalLessons = seedChapters.reduce((acc, ch) => acc + (ch.lessons?.length || 0), 0);
+        additionalCourses.push({
+          ...seedCourse,
+          chapters: seedChapters,
+          chapters_count: seedChapters.length,
+          lessons_count: seedTotalLessons,
+        });
+        existingSlugs.add(seedCourse.slug);
+      }
+    }
+
+    return [...processedCourses, ...additionalCourses];
   }
 
   /**
@@ -356,15 +496,14 @@ export class LearningService {
   }
 
   /**
-   * Calculate exact course progress summary for a given user
-   * Formula: completed_lessons / total_lessons * 100
+   * Internal helper: Unified, robust calculation of course progress and status
+   * Absolute Rules:
+   * 1. If totalLessons === 0 -> 0%, status='no_lessons', status_label='Contenu en cours de préparation', NEVER 100% and NEVER congratulations!
+   * 2. If completedLessons === totalLessons && totalLessons > 0 -> 100%, status='completed', status_label='Terminé', action_label='Revoir la formation'
+   * 3. If completedLessons > 0 && completedLessons < totalLessons -> 1-99%, status='in_progress', status_label='En cours', action_label='Continuer la formation'
+   * 4. If completedLessons === 0 && totalLessons > 0 -> 0%, status='not_started', status_label='Non commencé', action_label='Commencer la formation'
    */
-  async getCourseProgressSummary(userId: string, courseSlugOrId: string): Promise<CourseProgressSummary | null> {
-    const course = await this.getCourseBySlug(courseSlugOrId);
-    if (!course) return null;
-
-    const progressMap = await this.getUserProgressMap(userId);
-
+  private calculateSummary(course: Course, progressMap: Record<string, UserProgress>): CourseProgressSummary {
     const allLessons: Lesson[] = [];
     const chapterSummaries: ChapterProgressSummary[] = [];
 
@@ -372,7 +511,7 @@ export class LearningService {
       const chLessons = ch.lessons || [];
       allLessons.push(...chLessons);
 
-      const chCompletedCount = chLessons.filter((l) => progressMap[l.id]?.completed).length;
+      const chCompletedCount = chLessons.filter((l) => Boolean(progressMap[l.id]?.completed)).length;
       const chTotal = chLessons.length;
       const chPercent = chTotal > 0 ? Math.round((chCompletedCount / chTotal) * 100) : 0;
 
@@ -386,23 +525,89 @@ export class LearningService {
     });
 
     const totalLessons = allLessons.length;
-    const completedLessons = allLessons.filter((l) => progressMap[l.id]?.completed).length;
-    const percent = totalLessons > 0 ? Math.round((completedLessons / totalLessons) * 100) : 0;
+    const completedLessons = allLessons.filter((l) => Boolean(progressMap[l.id]?.completed)).length;
 
-    // Find next uncompleted lesson ("Continuer")
-    const nextLesson = allLessons.find((l) => !progressMap[l.id]?.completed) || allLessons[0];
-    const lastCompleted = [...allLessons].reverse().find((l) => progressMap[l.id]?.completed);
+    // Rule 1: No lessons available -> 0%, NEVER 100% and NEVER congratulations
+    if (totalLessons === 0) {
+      return {
+        course,
+        total_lessons: 0,
+        completed_lessons: 0,
+        percent: 0,
+        is_completed: false,
+        status: 'no_lessons',
+        status_label: 'Contenu en cours de préparation',
+        action_label: 'Contenu en cours de préparation',
+        next_lesson: undefined,
+        last_lesson: undefined,
+        chapter_summaries: chapterSummaries,
+      };
+    }
 
+    // Rule 2: All lessons completed -> 100%, Terminé
+    if (completedLessons === totalLessons) {
+      return {
+        course,
+        total_lessons: totalLessons,
+        completed_lessons: completedLessons,
+        percent: 100,
+        is_completed: true,
+        status: 'completed',
+        status_label: 'Terminé',
+        action_label: 'Revoir la formation',
+        next_lesson: allLessons[0], // Loop back to lesson 1 for review
+        last_lesson: allLessons[allLessons.length - 1],
+        chapter_summaries: chapterSummaries,
+      };
+    }
+
+    // Rule 3: Partially completed -> In progress
+    if (completedLessons > 0) {
+      const percent = Math.min(99, Math.max(1, Math.round((completedLessons / totalLessons) * 100)));
+      // Find the first uncompleted lesson in sequential order
+      const firstUncompleted = allLessons.find((l) => !progressMap[l.id]?.completed) || allLessons[0];
+      const lastCompleted = [...allLessons].reverse().find((l) => progressMap[l.id]?.completed);
+
+      return {
+        course,
+        total_lessons: totalLessons,
+        completed_lessons: completedLessons,
+        percent,
+        is_completed: false,
+        status: 'in_progress',
+        status_label: 'En cours',
+        action_label: 'Continuer la formation',
+        next_lesson: firstUncompleted,
+        last_lesson: lastCompleted,
+        chapter_summaries: chapterSummaries,
+      };
+    }
+
+    // Rule 4: Zero lessons completed -> 0%, Non commencé
     return {
       course,
       total_lessons: totalLessons,
-      completed_lessons: completedLessons,
-      percent,
-      is_completed: totalLessons > 0 && completedLessons === totalLessons,
-      next_lesson: nextLesson,
-      last_lesson: lastCompleted,
+      completed_lessons: 0,
+      percent: 0,
+      is_completed: false,
+      status: 'not_started',
+      status_label: 'Non commencé',
+      action_label: 'Commencer la formation',
+      next_lesson: allLessons[0], // Lesson 1 of Chapter 1
+      last_lesson: undefined,
       chapter_summaries: chapterSummaries,
     };
+  }
+
+  /**
+   * Calculate exact course progress summary for a given user
+   */
+  async getCourseProgressSummary(userId: string, courseSlugOrId: string): Promise<CourseProgressSummary | null> {
+    const course = await this.getCourseBySlug(courseSlugOrId);
+    if (!course) return null;
+
+    const progressMap = await this.getUserProgressMap(userId);
+    return this.calculateSummary(course, progressMap);
   }
 
   /**
@@ -411,45 +616,67 @@ export class LearningService {
   async getAllCoursesSummary(userId: string): Promise<CourseProgressSummary[]> {
     const courses = await this.getCourses();
     const progressMap = await this.getUserProgressMap(userId);
+    return courses.map((course) => this.calculateSummary(course, progressMap));
+  }
 
-    return courses.map((course) => {
-      const allLessons: Lesson[] = [];
-      const chapterSummaries: ChapterProgressSummary[] = [];
+  /**
+   * Automated diagnostic and audit control for all catalog courses
+   * Produces the verified matrix: FORMATION | CHAPITRES | LEÇONS | PROGRESSION | ÉTAT
+   */
+  async auditAllCourses(userId?: string): Promise<CourseAuditResult[]> {
+    const courses = await this.getCourses();
+    const progressMap = userId ? await this.getUserProgressMap(userId) : {};
 
-      (course.chapters || []).forEach((ch) => {
-        const chLessons = ch.lessons || [];
-        allLessons.push(...chLessons);
+    const auditResults: CourseAuditResult[] = courses.map((course) => {
+      const summary = this.calculateSummary(course, progressMap);
+      const chCount = (course.chapters || []).length;
+      const lCount = summary.total_lessons;
 
-        const chCompletedCount = chLessons.filter((l) => progressMap[l.id]?.completed).length;
-        const chTotal = chLessons.length;
-        const chPercent = chTotal > 0 ? Math.round((chCompletedCount / chTotal) * 100) : 0;
+      let integrityState: 'OK' | 'ERREUR DE DONNÉES' | 'CONTENU EN PRÉPARATION' = 'OK';
+      let details = 'Structure conforme';
 
-        chapterSummaries.push({
-          chapter_id: ch.id,
-          title: ch.title,
-          total_lessons: chTotal,
-          completed_lessons: chCompletedCount,
-          percent: chPercent,
-        });
-      });
-
-      const totalLessons = allLessons.length;
-      const completedLessons = allLessons.filter((l) => progressMap[l.id]?.completed).length;
-      const percent = totalLessons > 0 ? Math.round((completedLessons / totalLessons) * 100) : 0;
-      const nextLesson = allLessons.find((l) => !progressMap[l.id]?.completed) || allLessons[0];
-      const lastCompleted = [...allLessons].reverse().find((l) => progressMap[l.id]?.completed);
+      if (course.published) {
+        if (chCount === 0 || lCount === 0) {
+          integrityState = 'ERREUR DE DONNÉES';
+          details = `Anomalie structurelle : ${chCount} chapitres, ${lCount} leçons pour une formation publiée.`;
+        } else {
+          integrityState = 'OK';
+          details = `${chCount} chapitres, ${lCount} leçons valides avec relations strictes.`;
+        }
+      } else {
+        integrityState = 'CONTENU EN PRÉPARATION';
+        details = 'Formation non publiée (en cours de rédaction).';
+      }
 
       return {
-        course,
-        total_lessons: totalLessons,
-        completed_lessons: completedLessons,
-        percent,
-        is_completed: totalLessons > 0 && completedLessons === totalLessons,
-        next_lesson: nextLesson,
-        last_lesson: lastCompleted,
-        chapter_summaries: chapterSummaries,
+        course_id: course.id,
+        course_title: course.title,
+        slug: course.slug,
+        published: Boolean(course.published),
+        chapters_count: chCount,
+        lessons_count: lCount,
+        completed_lessons: summary.completed_lessons,
+        progress_percent: summary.percent,
+        status: summary.status,
+        status_label: summary.status_label,
+        integrity_state: integrityState,
+        details,
       };
     });
+
+    // Output formatted diagnostic table to console for traceability
+    const tableData = auditResults.map((r) => ({
+      FORMATION: r.course_title,
+      CHAPITRES: r.chapters_count,
+      LEÇONS: r.lessons_count,
+      PROGRESSION: `${r.completed_lessons} / ${r.lessons_count} (${r.progress_percent}%)`,
+      STATUT: r.status_label,
+      ÉTAT: r.integrity_state,
+    }));
+    console.log('=== [TELECOM LAB] AUDIT DU SYSTÈME DE FORMATIONS & PROGRESSION ===');
+    console.table(tableData);
+
+    return auditResults;
   }
 
   /**
