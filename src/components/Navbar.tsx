@@ -161,8 +161,12 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPath, currentRoute, onNav
                   onClick={() => setUserDropdownOpen(!userDropdownOpen)}
                   className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-cyan-950/60 hover:bg-cyan-900/60 border border-cyan-500/40 text-white text-xs font-mono transition-all hover:border-cyan-400/70"
                 >
-                  <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-cyan-500 to-blue-600 text-slate-950 flex items-center justify-center text-[11px] font-bold">
-                    {profile?.full_name?.charAt(0) || user.email?.charAt(0)?.toUpperCase() || 'U'}
+                  <div className="w-6 h-6 rounded-lg overflow-hidden bg-gradient-to-br from-cyan-500 to-blue-600 text-slate-950 flex items-center justify-center text-[11px] font-bold border border-cyan-400/40">
+                    {profile?.avatar_url ? (
+                      <img src={profile.avatar_url} alt="Avatar" className="w-full h-full object-cover" />
+                    ) : (
+                      profile?.full_name?.charAt(0) || user.email?.charAt(0)?.toUpperCase() || 'U'
+                    )}
                   </div>
                   <span className="font-bold max-w-[100px] truncate text-slate-100">
                     {profile?.full_name?.split(' ')[0] || user.email?.split('@')[0]}
@@ -282,9 +286,18 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPath, currentRoute, onNav
             {/* Auth status on mobile */}
             {user ? (
               <div className="my-4 p-3.5 rounded-xl bg-cyan-950/50 border border-cyan-500/30 flex items-center justify-between">
-                <div>
-                  <p className="text-xs font-bold text-white">{profile?.full_name || user.email}</p>
-                  <p className="text-[10px] font-mono text-cyan-300">Rôle : {profile?.role || 'STUDENT'}</p>
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-xl overflow-hidden bg-gradient-to-br from-cyan-500 to-blue-600 text-slate-950 flex items-center justify-center text-xs font-bold border border-cyan-400/40 shrink-0">
+                    {profile?.avatar_url ? (
+                      <img src={profile.avatar_url} alt="Avatar" className="w-full h-full object-cover" />
+                    ) : (
+                      profile?.full_name?.charAt(0) || user.email?.charAt(0)?.toUpperCase() || 'U'
+                    )}
+                  </div>
+                  <div>
+                    <p className="text-xs font-bold text-white">{profile?.full_name || user.email}</p>
+                    <p className="text-[10px] font-mono text-cyan-300">Rôle : {profile?.role || 'STUDENT'}</p>
+                  </div>
                 </div>
                 <button
                   onClick={handleSignOut}

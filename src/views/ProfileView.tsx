@@ -1,26 +1,20 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../contexts/AuthContext';
+import { supabase, isSupabaseConfigured } from '../lib/supabase';
 import { 
   User, 
   Mail, 
-  ShieldCheck, 
   Save, 
   CheckCircle2, 
   AlertCircle, 
   Loader2, 
-  Layers, 
-  Radio, 
-  Calendar, 
-  Cpu, 
-  KeyRound,
-  Sparkles,
   Award,
-  Database,
-  Copy,
-  ChevronDown,
-  ChevronUp
+  Upload,
+  Camera,
+  Trash2,
+  Sparkles,
+  ImageIcon
 } from 'lucide-react';
-import { Badge } from '../components/Badge';
 
 interface ProfileViewProps {
   onNavigate: (route: string) => void;
@@ -35,32 +29,84 @@ const SPECIALITIES = [
   'Supervision & Exploitation NOC Télécom',
 ];
 
-const PRESET_AVATARS = [
-  'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
-  'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80',
-  'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=150&auto=format&fit=crop&q=80',
-  'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&auto=format&fit=crop&q=80',
-];
+/**
+ * Redimensionne et compresse l'image sélectionnée au format carré JPEG optimisé.
+ * Garantit une excellente fluidité, une persistance Base64 légère et une compatibilité maximale.
+ */
+const compressImageToSquareDataUrl = (file: File, targetDimension = 400): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = () => reject(new Error('Erreur lors de la lecture du fichier image.'));
+    reader.onload = () => {
+      const img = new Image();
+      img.onerror = () => reject(new Error('Fichier image invalide ou non pris en charge.'));
+      img.onload = () => {
+        try {
+          const canvas = document.createElement('canvas');
+          const width = img.naturalWidth || img.width;
+          const height = img.naturalHeight || img.height;
 
-const SUPABASE_SCHEMA_SQL = `-- TELECOM LAB : Schéma PostgreSQL pour la table profiles
-CREATE TYPE IF NOT EXISTS public.user_role AS ENUM ('STUDENT', 'INSTRUCTOR', 'ADMIN');
+          // Recadrage centré carré
+          const minDim = Math.min(width, height);
+          const sourceX = (width - minDim) / 2;
+          const sourceY = (height - minDim) / 2;
 
-CREATE TABLE IF NOT EXISTS public.profiles (
-    id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
-    full_name TEXT,
-    avatar_url TEXT,
-    role public.user_role DEFAULT 'STUDENT'::public.user_role NOT NULL,
-    speciality TEXT DEFAULT 'Réseaux & Télécoms IP',
-    bio TEXT,
-    created_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL,
-    updated_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL
-);
+          const outputDim = Math.min(minDim, targetDimension);
+          canvas.width = outputDim;
+          canvas.height = outputDim;
 
-ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
+          const ctx = canvas.getContext('2d');
+          if (!ctx) {
+            resolve(reader.result as string);
+            return;
+          }
 
-CREATE POLICY "Lecture publique pour authentifiés" ON public.profiles FOR SELECT TO authenticated USING (true);
-CREATE POLICY "Insertion utilisateur" ON public.profiles FOR INSERT TO authenticated WITH CHECK (auth.uid() = id);
-CREATE POLICY "Mise à jour utilisateur" ON public.profiles FOR UPDATE TO authenticated USING (auth.uid() = id);`;
+          ctx.imageSmoothingEnabled = true;
+          ctx.imageSmoothingQuality = 'high';
+          ctx.drawImage(img, sourceX, sourceY, minDim, minDim, 0, 0, outputDim, outputDim);
+
+          const resultDataUrl = canvas.toDataURL('image/jpeg', 0.88);
+          resolve(resultDataUrl);
+        } catch {
+          resolve(reader.result as string);
+        }
+      };
+      img.src = reader.result as string;
+    };
+    reader.readAsDataURL(file);
+  });
+};
+
+/**
+ * Téléversement facultatif dans le bucket Supabase Storage 'avatars'
+ */
+const uploadAvatarToSupabaseStorage = async (file: File, userId: string): Promise<string | null> => {
+  if (!isSupabaseConfigured) return null;
+  try {
+    const fileExt = file.name.split('.').pop()?.toLowerCase() || 'jpg';
+    const cleanExt = ['png', 'jpg', 'jpeg', 'webp'].includes(fileExt) ? fileExt : 'jpg';
+    const filePath = `${userId}/${Date.now()}.${cleanExt}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from('avatars')
+      .upload(filePath, file, {
+        cacheControl: '3600',
+        upsert: true,
+      });
+
+    if (uploadError) {
+      // Fallback gracieux vers Base64
+      console.info('Supabase Storage notice (persistance Base64 active) :', uploadError.message);
+      return null;
+    }
+
+    const { data } = supabase.storage.from('avatars').getPublicUrl(filePath);
+    return data?.publicUrl || null;
+  } catch (err: any) {
+    console.info('Supabase Storage exception :', err?.message || err);
+    return null;
+  }
+};
 
 export const ProfileView: React.FC<ProfileViewProps> = ({ onNavigate }) => {
   const { user, profile, updateProfile, refreshProfile } = useAuth();
@@ -70,11 +116,17 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onNavigate }) => {
   const [bio, setBio] = useState(profile?.bio || '');
   const [avatarUrl, setAvatarUrl] = useState(profile?.avatar_url || '');
 
+  // Gestion du téléversement de photo
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [avatarRemoved, setAvatarRemoved] = useState<boolean>(false);
+  const [fileError, setFileError] = useState<string | null>(null);
+  const [isDragging, setIsDragging] = useState<boolean>(false);
+
   const [saving, setSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
-  const [showSqlGuide, setShowSqlGuide] = useState(false);
-  const [copiedSql, setCopiedSql] = useState(false);
 
   useEffect(() => {
     if (profile) {
@@ -82,8 +134,58 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onNavigate }) => {
       setSpeciality(profile.speciality || SPECIALITIES[0]);
       setBio(profile.bio || '');
       setAvatarUrl(profile.avatar_url || '');
+      setPreviewUrl(null);
+      setSelectedFile(null);
+      setAvatarRemoved(false);
     }
   }, [profile]);
+
+  const processFile = (file: File) => {
+    setFileError(null);
+    if (!file.type.startsWith('image/')) {
+      setFileError('Format non supporté. Veuillez sélectionner une image (PNG, JPG, WebP).');
+      return;
+    }
+
+    if (file.size > 10 * 1024 * 1024) {
+      setFileError('L\'image dépasse la taille maximale autorisée (10 Mo).');
+      return;
+    }
+
+    setSelectedFile(file);
+    setAvatarRemoved(false);
+
+    // Aperçu dynamique instantané
+    const objectUrl = URL.createObjectURL(file);
+    setPreviewUrl(objectUrl);
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      processFile(file);
+    }
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    setIsDragging(false);
+    const file = e.dataTransfer.files?.[0];
+    if (file) {
+      processFile(file);
+    }
+  };
+
+  const handleRemovePhoto = () => {
+    setSelectedFile(null);
+    setPreviewUrl(null);
+    setAvatarUrl('');
+    setAvatarRemoved(true);
+    setFileError(null);
+  };
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -91,11 +193,34 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onNavigate }) => {
     setSaveSuccess(false);
     setSaving(true);
 
+    let finalAvatarUrl: string | null = avatarRemoved ? null : (avatarUrl.trim() || null);
+
+    // Si une nouvelle photo a été sélectionnée par l'utilisateur
+    if (selectedFile) {
+      try {
+        // 1. Conversion Base64 haute performance
+        const base64Data = await compressImageToSquareDataUrl(selectedFile);
+        finalAvatarUrl = base64Data;
+
+        // 2. Tentative de téléversement dans le bucket Supabase 'avatars'
+        if (user?.id && isSupabaseConfigured) {
+          const storageUrl = await uploadAvatarToSupabaseStorage(selectedFile, user.id);
+          if (storageUrl) {
+            finalAvatarUrl = storageUrl;
+          }
+        }
+      } catch (err: any) {
+        setSaving(false);
+        setSaveError(err.message || 'Erreur lors du traitement de l\'image.');
+        return;
+      }
+    }
+
     const { error } = await updateProfile({
       full_name: fullName.trim(),
       speciality: speciality,
       bio: bio.trim(),
-      avatar_url: avatarUrl.trim() || null,
+      avatar_url: finalAvatarUrl,
     });
 
     setSaving(false);
@@ -103,19 +228,19 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onNavigate }) => {
     if (error) {
       setSaveError(error.message || 'Erreur lors de la mise à jour du profil.');
     } else {
+      setAvatarUrl(finalAvatarUrl || '');
+      setPreviewUrl(null);
+      setSelectedFile(null);
+      setAvatarRemoved(false);
       setSaveSuccess(true);
       await refreshProfile();
       setTimeout(() => setSaveSuccess(false), 4000);
     }
   };
 
-  const copySqlToClipboard = () => {
-    navigator.clipboard.writeText(SUPABASE_SCHEMA_SQL);
-    setCopiedSql(true);
-    setTimeout(() => setCopiedSql(false), 3000);
-  };
-
   const role = profile?.role || 'STUDENT';
+  const displayAvatar = avatarRemoved ? '' : (previewUrl || avatarUrl);
+  const hasCustomPhoto = Boolean(displayAvatar);
 
   return (
     <div className="min-h-screen pt-24 pb-16 px-4 sm:px-6 max-w-5xl mx-auto space-y-8">
@@ -133,7 +258,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onNavigate }) => {
             PROFIL INGÉNIEUR
           </h1>
           <p className="text-xs sm:text-sm text-slate-400 font-sans mt-1">
-            Gérez vos informations de compte, votre parcours de formation et votre spécialité télécom.
+            Gérez vos informations de compte, votre parcours de formation et votre photo de profil.
           </p>
         </div>
 
@@ -148,27 +273,48 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onNavigate }) => {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-        {/* Left Column: Profile Card Overview */}
+        {/* Left Column: Profile Card & Photo Uploader */}
         <div className="lg:col-span-4 space-y-6">
           <div className="rounded-2xl glass-panel-glow border border-cyan-500/30 p-6 flex flex-col items-center text-center space-y-4">
-            {/* Avatar container */}
-            <div className="relative">
-              <div className="w-24 h-24 rounded-2xl overflow-hidden border-2 border-cyan-500/50 bg-[#09111e] flex items-center justify-center text-cyan-300 shadow-xl shadow-cyan-950/60">
-                {avatarUrl ? (
+            {/* Avatar container with interactive change trigger */}
+            <div className="relative group">
+              <div 
+                onClick={() => fileInputRef.current?.click()}
+                className="w-28 h-28 rounded-2xl overflow-hidden border-2 border-cyan-500/50 bg-[#09111e] flex items-center justify-center text-cyan-300 shadow-xl shadow-cyan-950/60 cursor-pointer relative transition-all group-hover:border-cyan-400"
+              >
+                {displayAvatar ? (
                   <img 
-                    src={avatarUrl} 
-                    alt="Avatar" 
+                    src={displayAvatar} 
+                    alt="Photo de profil" 
                     className="w-full h-full object-cover"
-                    onError={() => setAvatarUrl('')}
+                    onError={() => {
+                      if (!previewUrl) setAvatarUrl('');
+                    }}
                   />
                 ) : (
-                  <User className="w-10 h-10" />
+                  <User className="w-12 h-12 text-slate-400" />
                 )}
+
+                {/* Hover overlay with camera icon */}
+                <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-1 text-white">
+                  <Camera className="w-5 h-5 text-cyan-300" />
+                  <span className="text-[10px] font-mono font-bold text-cyan-200">
+                    {hasCustomPhoto ? 'Changer' : 'Ajouter'}
+                  </span>
+                </div>
               </div>
-              <span className="absolute -bottom-1 -right-1 px-2 py-0.5 rounded-md bg-emerald-500 text-black font-mono font-bold text-[10px] uppercase">
+
+              <span className="absolute -bottom-1 -right-1 px-2 py-0.5 rounded-md bg-emerald-500 text-black font-mono font-bold text-[10px] uppercase shadow-md">
                 Actif
               </span>
             </div>
+
+            {previewUrl && (
+              <span className="text-[11px] font-mono px-2.5 py-1 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30 flex items-center gap-1">
+                <Sparkles className="w-3 h-3" />
+                <span>Aperçu (non enregistré)</span>
+              </span>
+            )}
 
             <div>
               <h3 className="font-heading font-bold text-lg text-white">
@@ -204,24 +350,81 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onNavigate }) => {
             </div>
           </div>
 
-          {/* Quick preset avatars */}
-          <div className="rounded-2xl glass-panel border border-cyan-500/15 p-5 space-y-3">
-            <span className="text-xs font-mono font-bold text-slate-300 block">
-              Sélectionner un avatar rapide :
-            </span>
-            <div className="grid grid-cols-4 gap-2">
-              {PRESET_AVATARS.map((url, idx) => (
+          {/* Photo Management Card */}
+          <div className="rounded-2xl glass-panel border border-cyan-500/20 p-5 space-y-4">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-mono font-bold text-slate-200 flex items-center gap-1.5">
+                <ImageIcon className="w-4 h-4 text-cyan-400" />
+                <span>Photo de Profil</span>
+              </span>
+              {hasCustomPhoto && (
+                <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-cyan-950/80 text-cyan-300 border border-cyan-500/30">
+                  Personnalisée
+                </span>
+              )}
+            </div>
+
+            {/* Hidden Input for local photo selection */}
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handleFileChange}
+              className="hidden"
+            />
+
+            {/* Drag & Drop interactive zone */}
+            <div
+              onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
+              onDragLeave={() => setIsDragging(false)}
+              onDrop={handleDrop}
+              onClick={() => fileInputRef.current?.click()}
+              className={`p-4 rounded-xl border border-dashed transition-all cursor-pointer flex flex-col items-center text-center gap-2.5 ${
+                isDragging 
+                  ? 'border-cyan-400 bg-cyan-950/40 scale-[1.02]' 
+                  : 'border-cyan-500/30 bg-[#09111e]/70 hover:bg-cyan-950/25 hover:border-cyan-400/60'
+              }`}
+            >
+              <div className="w-10 h-10 rounded-xl bg-cyan-950/80 border border-cyan-500/40 flex items-center justify-center text-cyan-300 shadow-inner">
+                <Upload className="w-5 h-5" />
+              </div>
+              <div>
+                <p className="text-xs font-mono font-bold text-white">
+                  {hasCustomPhoto ? 'Changer de photo' : 'Téléverser une photo'}
+                </p>
+                <p className="text-[11px] text-slate-400 font-sans mt-0.5">
+                  Glissez-déposez ou parcourez depuis votre appareil (PNG, JPG, WebP)
+                </p>
+              </div>
+            </div>
+
+            {fileError && (
+              <div className="p-2.5 rounded-lg bg-rose-950/50 border border-rose-500/40 text-rose-300 text-[11px] font-sans flex items-center gap-1.5">
+                <AlertCircle className="w-3.5 h-3.5 shrink-0 text-rose-400" />
+                <span>{fileError}</span>
+              </div>
+            )}
+
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className="flex-1 py-2.5 px-3 rounded-xl bg-gradient-to-r from-cyan-950/80 to-sky-950/80 hover:from-cyan-900/80 hover:to-sky-900/80 text-cyan-300 border border-cyan-500/40 text-xs font-mono font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-md shadow-cyan-950/40 hover:border-cyan-300"
+              >
+                <Camera className="w-4 h-4 text-cyan-400" />
+                <span>{hasCustomPhoto ? 'Changer de photo' : 'Téléverser une photo'}</span>
+              </button>
+
+              {hasCustomPhoto && (
                 <button
-                  key={idx}
                   type="button"
-                  onClick={() => setAvatarUrl(url)}
-                  className={`w-12 h-12 rounded-xl overflow-hidden border transition-all ${
-                    avatarUrl === url ? 'border-cyan-400 ring-2 ring-cyan-500/50 scale-105' : 'border-white/10 opacity-70 hover:opacity-100'
-                  }`}
+                  onClick={handleRemovePhoto}
+                  title="Supprimer la photo"
+                  className="p-2.5 rounded-xl bg-rose-950/40 hover:bg-rose-900/60 text-rose-400 border border-rose-500/30 transition-all cursor-pointer"
                 >
-                  <img src={url} alt={`Preset ${idx + 1}`} className="w-full h-full object-cover" />
+                  <Trash2 className="w-4 h-4" />
                 </button>
-              ))}
+              )}
             </div>
           </div>
         </div>
@@ -241,7 +444,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onNavigate }) => {
             {saveSuccess && (
               <div className="p-3.5 rounded-xl bg-emerald-950/50 border border-emerald-500/40 text-emerald-200 text-xs font-sans flex items-center gap-2">
                 <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-                <span>Votre profil a été enregistré et synchronisé avec succès !</span>
+                <span>Votre profil et vos informations ont été enregistrés avec succès !</span>
               </div>
             )}
 
@@ -300,19 +503,6 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onNavigate }) => {
 
               <div className="space-y-1.5">
                 <label className="text-xs font-mono font-bold text-slate-300">
-                  URL personnalisée d'Avatar (optionnel)
-                </label>
-                <input
-                  type="url"
-                  value={avatarUrl}
-                  onChange={(e) => setAvatarUrl(e.target.value)}
-                  placeholder="https://example.com/mon-avatar.jpg"
-                  className="w-full px-4 py-3 rounded-xl bg-[#09111e] border border-cyan-500/20 text-white font-mono text-xs focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 transition-colors"
-                />
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="text-xs font-mono font-bold text-slate-300">
                   Bio / Objectifs professionnels Télécom
                 </label>
                 <textarea
@@ -348,56 +538,6 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onNavigate }) => {
                 </button>
               </div>
             </form>
-          </div>
-
-          {/* Collapsible Supabase SQL Schema helper */}
-          <div className="rounded-2xl glass-panel border border-cyan-500/15 p-4 space-y-3">
-            <button
-              type="button"
-              onClick={() => setShowSqlGuide(!showSqlGuide)}
-              className="w-full flex items-center justify-between text-left cursor-pointer"
-            >
-              <div className="flex items-center gap-2 text-xs font-mono text-cyan-300 font-bold">
-                <Database className="w-4 h-4 text-cyan-400" />
-                <span>Optionnel : Schéma SQL Supabase pour persistance multi-appareils</span>
-              </div>
-              {showSqlGuide ? (
-                <ChevronUp className="w-4 h-4 text-slate-400" />
-              ) : (
-                <ChevronDown className="w-4 h-4 text-slate-400" />
-              )}
-            </button>
-
-            {showSqlGuide && (
-              <div className="pt-3 border-t border-cyan-500/15 space-y-3 animate-in fade-in">
-                <p className="text-xs text-slate-400 font-sans leading-relaxed">
-                  Votre profil est actuellement sauvegardé automatiquement. Pour le répliquer sur tous vos appareils via votre base Supabase, vous pouvez exécuter ce script dans le <strong className="text-white">SQL Editor</strong> de Supabase :
-                </p>
-
-                <div className="relative">
-                  <pre className="p-3.5 rounded-xl bg-[#09111e] border border-cyan-500/20 font-mono text-[11px] text-cyan-200 overflow-x-auto leading-relaxed max-h-44">
-                    {SUPABASE_SCHEMA_SQL}
-                  </pre>
-                  <button
-                    type="button"
-                    onClick={copySqlToClipboard}
-                    className="absolute top-2.5 right-2.5 flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-950 font-mono text-[10px] font-bold transition-all shadow-md"
-                  >
-                    {copiedSql ? (
-                      <>
-                        <CheckCircle2 className="w-3 h-3 text-emerald-950" />
-                        <span>Copié !</span>
-                      </>
-                    ) : (
-                      <>
-                        <Copy className="w-3 h-3 text-slate-950" />
-                        <span>Copier SQL</span>
-                      </>
-                    )}
-                  </button>
-                </div>
-              </div>
-            )}
           </div>
         </div>
       </div>
