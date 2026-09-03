@@ -25,7 +25,6 @@ export default defineConfig(() => {
           manualChunks: {
             vendor: ['react', 'react-dom'],
             supabase: ['@supabase/supabase-js'],
-            genai: ['@google/genai'],
           },
         },
       },
