@@ -14,10 +14,14 @@ import {
   Sparkles, 
   Terminal, 
   AlertCircle,
-  Database,
-  ExternalLink
+  Copy,
+  ListOrdered,
+  Lightbulb,
+  HelpCircle,
+  Play
 } from 'lucide-react';
-import { Badge } from '../components/Badge';
+import { VideoPlayer } from '../components/learning/VideoPlayer';
+import { CourseSidebar } from '../components/learning/CourseSidebar';
 
 interface LessonViewProps {
   lessonId: string;
@@ -37,9 +41,12 @@ export const LessonView: React.FC<LessonViewProps> = ({
   const [currentChapter, setCurrentChapter] = useState<Chapter | null>(null);
   const [currentLesson, setCurrentLesson] = useState<Lesson | null>(null);
   const [allLessons, setAllLessons] = useState<Lesson[]>([]);
+  const [userProgressMap, setUserProgressMap] = useState<Record<string, UserProgress>>({});
   const [isCompleted, setIsCompleted] = useState<boolean>(false);
   const [isSaving, setIsSaving] = useState<boolean>(false);
   const [syncNotice, setSyncNotice] = useState<string | null>(null);
+  const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(false);
+  const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
 
   const userId = user?.id || '';
 
@@ -70,7 +77,11 @@ export const LessonView: React.FC<LessonViewProps> = ({
 
     if (userId && foundLesson) {
       const progressMap = await learningService.getUserProgressMap(userId);
+      setUserProgressMap(progressMap);
       setIsCompleted(Boolean(progressMap[foundLesson.id]?.completed));
+      if (foundCourse) {
+        learningService.recordCourseState(userId, foundCourse.id, foundLesson.id);
+      }
     }
   };
 
@@ -98,11 +109,17 @@ export const LessonView: React.FC<LessonViewProps> = ({
     try {
       const newStatus = await learningService.toggleLessonStatus(userId, currentLesson.id, course.id);
       setIsCompleted(newStatus);
-      setSyncNotice(newStatus ? 'Leçon validée et enregistrée sur votre profil Supabase !' : 'Statut réinitialisé.');
+      setSyncNotice(newStatus ? 'Leçon validée et synchronisée avec votre profil !' : 'Statut réinitialisé.');
       setTimeout(() => setSyncNotice(null), 4000);
     } finally {
       setIsSaving(false);
     }
+  };
+
+  const copyToClipboard = (text: string, idx: number) => {
+    navigator.clipboard.writeText(text);
+    setCopiedIndex(idx);
+    setTimeout(() => setCopiedIndex(null), 2500);
   };
 
   if (!currentLesson || !course) {
@@ -118,27 +135,28 @@ export const LessonView: React.FC<LessonViewProps> = ({
 
   return (
     <div className="min-h-screen pt-24 pb-16 px-4 sm:px-6 max-w-5xl mx-auto space-y-8">
-      {/* Top Breadcrumb & Navigation Bar */}
+      {/* Top Breadcrumb & Quick Controls */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-cyan-500/20">
-        <div className="flex items-center gap-2 text-xs font-mono text-slate-400">
+        <div className="flex items-center gap-2 text-xs font-mono text-slate-400 min-w-0">
           <button
             onClick={() => onBackToCourse(course.slug)}
-            className="inline-flex items-center gap-1 text-cyan-400 hover:text-cyan-300 transition-colors font-bold"
+            className="inline-flex items-center gap-1.5 text-cyan-400 hover:text-cyan-300 transition-colors font-bold shrink-0"
           >
             <ArrowLeft className="w-3.5 h-3.5" />
             {course.title}
           </button>
           <span>/</span>
-          <span className="text-slate-300 truncate max-w-[200px]">{currentChapter?.title}</span>
+          <span className="text-slate-300 truncate max-w-[160px] sm:max-w-none">{currentChapter?.title}</span>
           <span>/</span>
-          <span className="text-white font-bold truncate max-w-[200px]">{currentLesson.title}</span>
+          <span className="text-white font-bold truncate max-w-[160px] sm:max-w-none">{currentLesson.title}</span>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 shrink-0">
           <button
-            onClick={() => onBackToCourse(course.slug)}
-            className="px-3.5 py-1.5 rounded-xl bg-cyan-950/40 hover:bg-cyan-950/70 border border-cyan-500/25 text-xs font-mono text-slate-300 transition-colors"
+            onClick={() => setIsSidebarOpen(true)}
+            className="px-3.5 py-1.5 rounded-xl bg-cyan-950/60 hover:bg-cyan-950 border border-cyan-500/30 text-xs font-mono text-cyan-300 transition-colors flex items-center gap-2"
           >
+            <Layers className="w-3.5 h-3.5" />
             Sommaire du Cours
           </button>
         </div>
@@ -152,10 +170,27 @@ export const LessonView: React.FC<LessonViewProps> = ({
         </div>
       )}
 
+      {/* Video Player */}
+      <div className="space-y-3">
+        <VideoPlayer
+          userId={userId}
+          lessonId={currentLesson.id}
+          courseId={course.id}
+          videoUrl={currentLesson.video_url}
+          videoDuration={currentLesson.video_duration || '20:00'}
+          title={currentLesson.title}
+          onEnded={() => {
+            if (!isCompleted && userId) {
+              handleToggleCompletion();
+            }
+          }}
+        />
+      </div>
+
       {/* Lesson Header Card */}
       <div className="rounded-3xl glass-panel-glow border border-cyan-500/30 p-6 sm:p-8 space-y-6">
         <div className="flex flex-wrap items-center justify-between gap-4">
-          <div className="flex items-center gap-2 font-mono text-xs">
+          <div className="flex flex-wrap items-center gap-2 font-mono text-xs">
             <span className="px-2.5 py-1 rounded-full bg-cyan-950/80 border border-cyan-500/40 text-cyan-300 font-bold">
               LEÇON {currentLesson.position}
             </span>
@@ -181,7 +216,7 @@ export const LessonView: React.FC<LessonViewProps> = ({
             {isCompleted ? (
               <>
                 <Check className="w-4 h-4 text-emerald-400 stroke-[3]" />
-                ✓ Leçon Terminée (Cliquer pour annuler)
+                ✓ Leçon Validée (Cliquer pour annuler)
               </>
             ) : (
               <>
@@ -203,6 +238,80 @@ export const LessonView: React.FC<LessonViewProps> = ({
           )}
         </div>
       </div>
+
+      {/* Key Points Card (Points Clés de la leçon) */}
+      {currentLesson.key_points && currentLesson.key_points.length > 0 && (
+        <div className="rounded-2xl glass-panel border border-cyan-500/25 p-5 space-y-3 bg-[#081220]/80">
+          <div className="flex items-center gap-2 text-cyan-300">
+            <Lightbulb className="w-4 h-4 text-cyan-400" />
+            <h4 className="font-heading font-bold text-xs uppercase tracking-wider text-white">
+              Points Clés à Retenir
+            </h4>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs text-slate-300 font-sans">
+            {currentLesson.key_points.map((pt, pIdx) => (
+              <div key={pIdx} className="flex items-start gap-2 bg-[#040811]/60 p-2.5 rounded-xl border border-cyan-500/10">
+                <span className="text-cyan-400 font-bold shrink-0 mt-0.5">•</span>
+                <span>{pt}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* CLI & Terminal Commands Examples */}
+      {currentLesson.cli_examples && currentLesson.cli_examples.length > 0 && (
+        <div className="space-y-4">
+          <div className="flex items-center gap-2 text-white">
+            <Terminal className="w-4 h-4 text-cyan-400" />
+            <h4 className="font-heading font-bold text-xs uppercase tracking-wider">
+              Commandes Pratiques & Configuration CLI
+            </h4>
+          </div>
+
+          <div className="space-y-3">
+            {currentLesson.cli_examples.map((ex, exIdx) => (
+              <div key={exIdx} className="rounded-2xl bg-[#040811] border border-cyan-500/30 overflow-hidden shadow-lg">
+                <div className="px-4 py-2 bg-[#091222] border-b border-cyan-500/20 flex items-center justify-between">
+                  <div className="flex items-center gap-2 text-xs font-mono">
+                    <span className="px-2 py-0.5 rounded bg-cyan-950 text-cyan-300 border border-cyan-500/40 text-[10px] font-bold">
+                      {ex.os || 'CLI'}
+                    </span>
+                    <span className="text-slate-300 font-bold">{ex.title}</span>
+                  </div>
+
+                  <button
+                    onClick={() => copyToClipboard(ex.command, exIdx)}
+                    className="flex items-center gap-1 text-[11px] font-mono text-cyan-400 hover:text-cyan-300 transition-colors"
+                  >
+                    {copiedIndex === exIdx ? (
+                      <>
+                        <Check className="w-3.5 h-3.5 text-emerald-400" />
+                        <span className="text-emerald-400 font-bold">Copié !</span>
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="w-3.5 h-3.5" />
+                        <span>Copier</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+
+                <div className="p-4 font-mono text-xs text-cyan-200 overflow-x-auto">
+                  <pre>{ex.command}</pre>
+                </div>
+
+                {ex.outputDescription && (
+                  <div className="px-4 py-2 bg-[#070e1a] border-t border-cyan-500/10 text-[11px] font-mono text-slate-400">
+                    ℹ {ex.outputDescription}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Lesson Content Body */}
       <div className="rounded-2xl glass-panel border border-cyan-500/20 p-6 sm:p-8 space-y-6">
@@ -231,7 +340,6 @@ export const LessonView: React.FC<LessonViewProps> = ({
               );
             }
             if (paragraph.startsWith('|')) {
-              // Simple markdown table rendering
               const rows = paragraph.split('\n').filter(r => !r.includes('---'));
               return (
                 <div key={idx} className="overflow-x-auto my-4 rounded-xl border border-cyan-500/20">
@@ -269,13 +377,13 @@ export const LessonView: React.FC<LessonViewProps> = ({
               Vous avez terminé l'étude de cette leçon ?
             </h4>
             <p className="text-xs text-slate-400 font-sans">
-              Validez la leçon pour enregistrer votre progression dans Supabase et débloquer les leçons suivantes.
+              Validez la leçon pour enregistrer votre progression personnelle et passer à la leçon suivante.
             </p>
           </div>
 
           <button
             onClick={handleToggleCompletion}
-            className={`px-5 py-2.5 rounded-xl font-mono text-xs font-bold transition-all shadow-md shrink-0 ${
+            className={`px-5 py-2.5 rounded-xl font-mono text-xs font-bold transition-all shadow-md shrink-0 cursor-pointer ${
               isCompleted
                 ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/50'
                 : 'bg-gradient-to-r from-cyan-500 to-blue-600 text-slate-950 hover:from-cyan-400'
@@ -316,6 +424,16 @@ export const LessonView: React.FC<LessonViewProps> = ({
           </button>
         )}
       </div>
+
+      {/* Sidebar Drawer */}
+      <CourseSidebar
+        course={course}
+        currentLessonId={currentLesson.id}
+        userProgressMap={userProgressMap}
+        isOpen={isSidebarOpen}
+        onClose={() => setIsSidebarOpen(false)}
+        onSelectLesson={onSelectLesson}
+      />
     </div>
   );
 };

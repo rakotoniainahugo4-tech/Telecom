@@ -16,9 +16,13 @@ import {
   ChevronDown,
   ChevronUp,
   ShieldCheck,
-  Check
+  Check,
+  Target,
+  GraduationCap,
+  FileText,
+  Star,
+  Compass
 } from 'lucide-react';
-import { Badge } from '../components/Badge';
 
 interface CourseDetailViewProps {
   courseSlug: string;
@@ -115,6 +119,8 @@ export const CourseDetailView: React.FC<CourseDetailViewProps> = ({
   }
 
   const { course, percent, completed_lessons, total_lessons, is_completed, next_lesson } = courseSummary;
+  const chaptersCount = course.chapters?.length || course.chapters_count || 0;
+  const estimatedHours = course.estimated_hours || course.total_hours || 10;
 
   return (
     <div className="min-h-screen pt-24 pb-16 px-4 sm:px-6 max-w-6xl mx-auto space-y-8">
@@ -125,13 +131,13 @@ export const CourseDetailView: React.FC<CourseDetailViewProps> = ({
           className="inline-flex items-center gap-2 text-xs font-mono text-cyan-400 hover:text-cyan-300 transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
-          Retour au Dashboard
+          Retour aux formations
         </button>
 
         <div className="flex items-center gap-2 text-xs font-mono text-slate-400">
           <span>{course.category}</span>
           <span>/</span>
-          <span className="text-white font-bold">{course.title}</span>
+          <span className="text-white font-bold truncate max-w-[200px] sm:max-w-none">{course.title}</span>
         </div>
       </div>
 
@@ -139,27 +145,41 @@ export const CourseDetailView: React.FC<CourseDetailViewProps> = ({
       <div className="rounded-3xl glass-panel-glow border border-cyan-500/30 p-6 sm:p-8 relative overflow-hidden">
         <div className="relative z-10 space-y-6">
           <div className="flex flex-wrap items-center justify-between gap-4">
-            <div className="flex items-center gap-2.5">
+            <div className="flex flex-wrap items-center gap-2.5">
               <span className="px-3 py-1 rounded-full bg-cyan-950/80 border border-cyan-500/40 text-cyan-300 font-mono text-xs font-bold">
-                {course.badge || 'FORMATION'}
+                {course.badge || 'PROGRAMME SPÉCIALISÉ'}
               </span>
               <span className="px-2.5 py-1 rounded-full bg-purple-950/60 border border-purple-500/30 text-purple-300 font-mono text-xs">
                 {course.difficulty}
               </span>
-              <span className="px-2.5 py-1 rounded-full bg-slate-900 border border-slate-700 text-slate-300 font-mono text-xs flex items-center gap-1">
+              <span className="px-2.5 py-1 rounded-full bg-slate-900 border border-slate-700 text-slate-300 font-mono text-xs flex items-center gap-1.5">
                 <Clock className="w-3.5 h-3.5 text-slate-400" />
-                ~{course.estimated_hours}h de cours
+                {estimatedHours}h de formation
               </span>
+              <span className="px-2.5 py-1 rounded-full bg-slate-900 border border-slate-700 text-slate-300 font-mono text-xs flex items-center gap-1.5">
+                <Layers className="w-3.5 h-3.5 text-slate-400" />
+                {chaptersCount} chapitres
+              </span>
+              <span className="px-2.5 py-1 rounded-full bg-slate-900 border border-slate-700 text-slate-300 font-mono text-xs flex items-center gap-1.5">
+                <BookOpen className="w-3.5 h-3.5 text-slate-400" />
+                {total_lessons} leçons
+              </span>
+              {course.rating && (
+                <span className="px-2.5 py-1 rounded-full bg-amber-950/40 border border-amber-500/30 text-amber-300 font-mono text-xs flex items-center gap-1">
+                  <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
+                  {course.rating} ({course.reviews_count || 100} avis)
+                </span>
+              )}
             </div>
 
-            {/* Resume button */}
+            {/* Action CTA Button */}
             {next_lesson && (
               <button
                 onClick={() => onOpenLesson(next_lesson.id)}
-                className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 via-sky-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-950 text-xs font-mono font-bold uppercase tracking-wider transition-all shadow-lg shadow-cyan-950/60 border border-cyan-300/40 hover:scale-[1.02]"
+                className="flex items-center gap-2.5 px-6 py-3 rounded-xl bg-gradient-to-r from-cyan-500 via-sky-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-950 text-xs font-mono font-bold uppercase tracking-wider transition-all shadow-lg shadow-cyan-950/60 border border-cyan-300/40 hover:scale-[1.02]"
               >
                 <Play className="w-4 h-4 text-slate-950 fill-slate-950" />
-                {completed_lessons === 0 ? 'Commencer la formation' : 'Continuer le cours'}
+                {completed_lessons === 0 ? 'Commencer la formation' : 'Continuer la formation'}
               </button>
             )}
           </div>
@@ -168,16 +188,16 @@ export const CourseDetailView: React.FC<CourseDetailViewProps> = ({
             <h1 className="font-heading font-black text-2xl sm:text-4xl text-white tracking-tight">
               {course.title}
             </h1>
-            <p className="text-slate-300 font-sans text-sm sm:text-base leading-relaxed mt-2 max-w-4xl">
+            <p className="text-slate-300 font-sans text-sm sm:text-base leading-relaxed mt-3 max-w-4xl">
               {course.description}
             </p>
           </div>
 
           {/* Personal Progression Bar */}
-          <div className="rounded-2xl bg-[#09101e]/90 border border-cyan-500/25 p-4 sm:p-5 space-y-3">
+          <div className="rounded-2xl bg-[#09101e]/95 border border-cyan-500/25 p-5 space-y-3">
             <div className="flex items-center justify-between text-xs font-mono">
               <div className="flex items-center gap-2">
-                <span className="text-slate-400 uppercase font-bold">Progression Personnelle :</span>
+                <span className="text-slate-400 uppercase font-bold">Progression individuelle :</span>
                 <span className="text-cyan-300 font-bold">{completed_lessons} / {total_lessons} leçons terminées</span>
               </div>
               <span className={`font-black text-sm ${is_completed ? 'text-emerald-400' : 'text-cyan-300'}`}>
@@ -197,19 +217,92 @@ export const CourseDetailView: React.FC<CourseDetailViewProps> = ({
               />
             </div>
 
-            {next_lesson && !is_completed && (
-              <p className="text-[11px] font-mono text-slate-400">
-                Prochaine leçon recommandée : <span className="text-cyan-300 font-semibold">{next_lesson.title}</span>
-              </p>
-            )}
+            <div className="flex flex-wrap items-center justify-between gap-2 pt-1">
+              {next_lesson && !is_completed ? (
+                <p className="text-xs font-mono text-slate-400 flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
+                  Prochaine leçon : <button onClick={() => onOpenLesson(next_lesson.id)} className="text-cyan-300 hover:underline font-semibold">{next_lesson.title}</button>
+                </p>
+              ) : (
+                <div className="flex items-center gap-2 text-xs font-mono text-emerald-400">
+                  <CheckCircle2 className="w-4 h-4" />
+                  <span>Félicitations ! Vous avez validé l'intégralité de ce cursus.</span>
+                </div>
+              )}
 
-            {is_completed && (
-              <div className="flex items-center gap-2 text-xs font-mono text-emerald-400">
-                <CheckCircle2 className="w-4 h-4" />
-                <span>Félicitations ! Vous avez complété 100% de cette formation.</span>
-              </div>
-            )}
+              <span className="text-[11px] font-mono text-slate-400">
+                Calculé dynamiquement selon vos réussites
+              </span>
+            </div>
           </div>
+        </div>
+      </div>
+
+      {/* Grid: Objectifs, Compétences & Prérequis */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {/* Objectifs Pédagogiques */}
+        <div className="rounded-2xl glass-panel border border-cyan-500/20 p-5 space-y-3">
+          <div className="flex items-center gap-2.5 text-cyan-300">
+            <Target className="w-5 h-5 text-cyan-400" />
+            <h3 className="font-heading font-bold text-sm text-white uppercase tracking-wider">
+              Objectifs Pédagogiques
+            </h3>
+          </div>
+          <ul className="space-y-2 text-xs text-slate-300 leading-relaxed">
+            {(course.objectives && course.objectives.length > 0 ? course.objectives : [
+              'Maîtriser les architectures et protocoles de référence de bout en bout.',
+              'Savoir dimensionner, configurer et administrer les équipements réels.',
+              'Développer une méthodologie rigoureuse d\'analyse et de diagnostic d\'incidents.'
+            ]).map((obj, idx) => (
+              <li key={idx} className="flex items-start gap-2">
+                <span className="text-cyan-400 font-bold shrink-0 mt-0.5">•</span>
+                <span>{obj}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        {/* Compétences Acquises */}
+        <div className="rounded-2xl glass-panel border border-purple-500/20 p-5 space-y-3">
+          <div className="flex items-center gap-2.5 text-purple-300">
+            <GraduationCap className="w-5 h-5 text-purple-400" />
+            <h3 className="font-heading font-bold text-sm text-white uppercase tracking-wider">
+              Compétences Acquises
+            </h3>
+          </div>
+          <ul className="space-y-2 text-xs text-slate-300 leading-relaxed">
+            {(course.skills_acquired && course.skills_acquired.length > 0 ? course.skills_acquired : [
+              'Conception d\'architectures réseaux et télécoms',
+              'Configuration en ligne de commande Cisco IOS & Linux',
+              'Dépannage par analyse de paquets avec Wireshark et tcpdump'
+            ]).map((skill, idx) => (
+              <li key={idx} className="flex items-start gap-2">
+                <Check className="w-3.5 h-3.5 text-purple-400 shrink-0 mt-0.5" />
+                <span>{skill}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        {/* Prérequis */}
+        <div className="rounded-2xl glass-panel border border-slate-700/60 p-5 space-y-3">
+          <div className="flex items-center gap-2.5 text-slate-300">
+            <ShieldCheck className="w-5 h-5 text-emerald-400" />
+            <h3 className="font-heading font-bold text-sm text-white uppercase tracking-wider">
+              Prérequis Recommandés
+            </h3>
+          </div>
+          <ul className="space-y-2 text-xs text-slate-400 leading-relaxed">
+            {(course.prerequisites && course.prerequisites.length > 0 ? course.prerequisites : [
+              'Connaissance générale de l\'informatique et manipulation basique d\'un terminal.',
+              'Raisonnement logique et curiosité pour les infrastructures de communication.'
+            ]).map((req, idx) => (
+              <li key={idx} className="flex items-start gap-2">
+                <span className="text-slate-400 font-mono shrink-0 mt-0.5">›</span>
+                <span>{req}</span>
+              </li>
+            ))}
+          </ul>
         </div>
       </div>
 
@@ -222,10 +315,10 @@ export const CourseDetailView: React.FC<CourseDetailViewProps> = ({
             </div>
             <div>
               <h2 className="font-heading font-black text-lg sm:text-xl text-white tracking-wide uppercase">
-                Sommaire du Cours & Chapitres
+                Sommaire du Programme & Chapitres
               </h2>
               <p className="text-xs font-mono text-slate-400">
-                {(course.chapters || []).length} chapitres &bull; {total_lessons} leçons au total
+                {chaptersCount} chapitres &bull; {total_lessons} leçons professionnelles
               </p>
             </div>
           </div>
@@ -253,7 +346,7 @@ export const CourseDetailView: React.FC<CourseDetailViewProps> = ({
                   <div className="space-y-1">
                     <div className="flex items-center gap-2">
                       <span className="text-[10px] font-mono font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-cyan-950 border border-cyan-500/30 text-cyan-400">
-                        CHAPITRE {chIdx + 1}
+                        CHAPITRE {chapter.chapter_number || chIdx + 1}
                       </span>
                       <h3 className="font-heading font-bold text-base text-white">
                         {chapter.title}
@@ -270,9 +363,9 @@ export const CourseDetailView: React.FC<CourseDetailViewProps> = ({
                   <div className="flex items-center gap-4 shrink-0">
                     <div className="text-right">
                       <span className="text-xs font-mono font-bold text-cyan-300">
-                        {completedCount} / {chTotal} terminées
+                        {completedCount} / {chTotal} terminées ({chPercent}%)
                       </span>
-                      <div className="w-24 h-1.5 rounded-full bg-slate-900 mt-1 overflow-hidden border border-cyan-500/20">
+                      <div className="w-28 h-1.5 rounded-full bg-slate-900 mt-1 overflow-hidden border border-cyan-500/20">
                         <div 
                           className={`h-full rounded-full transition-all ${
                             chPercent === 100 ? 'bg-emerald-400' : 'bg-cyan-400'
@@ -310,7 +403,7 @@ export const CourseDetailView: React.FC<CourseDetailViewProps> = ({
                             <button
                               onClick={(e) => handleToggleLesson(e, lesson.id, course.id)}
                               title={isCompleted ? "Marqué comme terminé (cliquer pour inverser)" : "Cliquer pour marquer comme terminé"}
-                              className={`w-7 h-7 rounded-lg flex items-center justify-center transition-all ${
+                              className={`w-7 h-7 rounded-lg flex items-center justify-center transition-all shrink-0 ${
                                 isCompleted
                                   ? 'bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 hover:bg-emerald-500/30'
                                   : isNext

@@ -92,18 +92,19 @@ export class LearningService {
       const { data: dbCourses, error: cErr } = await supabase
         .from('courses')
         .select('*')
+        .eq('published', true)
         .order('created_at', { ascending: true });
 
       if (cErr) {
         if (isTableMissingError(cErr)) {
-          return this.buildCoursesWithTree(SEED_COURSES, SEED_CHAPTERS, SEED_LESSONS);
+          return this.buildCoursesWithTree(SEED_COURSES.filter(c => c.published !== false), SEED_CHAPTERS, SEED_LESSONS);
         }
         console.warn('Error fetching courses from Supabase, falling back to seed:', cErr.message);
-        return this.buildCoursesWithTree(SEED_COURSES, SEED_CHAPTERS, SEED_LESSONS);
+        return this.buildCoursesWithTree(SEED_COURSES.filter(c => c.published !== false), SEED_CHAPTERS, SEED_LESSONS);
       }
 
       if (!dbCourses || dbCourses.length === 0) {
-        return this.buildCoursesWithTree(SEED_COURSES, SEED_CHAPTERS, SEED_LESSONS);
+        return this.buildCoursesWithTree(SEED_COURSES.filter(c => c.published !== false), SEED_CHAPTERS, SEED_LESSONS);
       }
 
       const { data: dbChapters } = await supabase
@@ -146,7 +147,29 @@ export class LearningService {
    */
   async getCourseBySlug(slugOrId: string): Promise<Course | null> {
     const all = await this.getCourses();
-    return all.find((c) => c.slug === slugOrId || c.id === slugOrId) || null;
+    const SLUG_ALIASES: Record<string, string> = {
+      'ip-routing-advanced': 'ingenierie-ip-routage-avance',
+      'ingenierie-ip-routage-avance': 'ip-routing-advanced',
+      'mpls': 'architectures-ip-mpls-l3vpn-l2vpn',
+      'architectures-ip-mpls-l3vpn-l2vpn': 'mpls',
+      'voip': 'telephonie-ip-voip-asterisk-freepbx',
+      'telephonie-ip-voip-asterisk-freepbx': 'voip',
+      'mobile-cellular': 'reseaux-mobiles-cellulaires',
+      'reseaux-mobiles-cellulaires': 'mobile-cellular',
+      'fiber-transmission': 'transmission-fibre-optique',
+      'transmission-fibre-optique': 'fiber-transmission',
+      'network-automation': 'automation-reseau-linux-ingenieurs',
+      'automation-reseau-linux-ingenieurs': 'network-automation',
+    };
+
+    return all.find((c) => {
+      if (c.slug === slugOrId || c.id === slugOrId) return true;
+      const alias = SLUG_ALIASES[slugOrId];
+      if (alias && c.slug === alias) return true;
+      const reverseAlias = SLUG_ALIASES[c.slug];
+      if (reverseAlias && reverseAlias === slugOrId) return true;
+      return false;
+    }) || null;
   }
 
   /**
@@ -465,6 +488,163 @@ export class LearningService {
       average_quiz_score: lessonsCompleted > 0 ? 85 + ((lessonsCompleted % 4) * 3) : 0,
       learning_hours: learningHours,
     };
+  }
+
+  /**
+   * Save video position for a user on a specific lesson
+   */
+  async saveVideoPosition(userId: string, lessonId: string, seconds: number, courseId?: string): Promise<void> {
+    if (!userId || !lessonId || seconds < 0) return;
+
+    const roundedSeconds = Math.floor(seconds);
+    const localMap = this.getLocalUserProgress(userId);
+    const existing = localMap[lessonId] || {
+      user_id: userId,
+      lesson_id: lessonId,
+      completed: false,
+      progress_percent: 0,
+      last_position_seconds: 0,
+      started_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    };
+
+    existing.last_position_seconds = roundedSeconds;
+    existing.updated_at = new Date().toISOString();
+    localMap[lessonId] = existing;
+    this.saveLocalUserProgress(userId, localMap);
+
+    if (courseId) {
+      const enrolled = this.getLocalEnrollments(userId);
+      if (!enrolled.includes(courseId)) {
+        enrolled.push(courseId);
+        this.saveLocalEnrollments(userId, enrolled);
+      }
+    }
+
+    if (isSupabaseConfigured) {
+      try {
+        await supabase
+          .from('user_progress')
+          .upsert(
+            {
+              user_id: userId,
+              lesson_id: lessonId,
+              last_position_seconds: roundedSeconds,
+              updated_at: existing.updated_at,
+            },
+            { onConflict: 'user_id,lesson_id' }
+          );
+      } catch {
+        // silent failover
+      }
+    }
+  }
+
+  /**
+   * Record the last accessed course and lesson for user
+   */
+  async recordCourseState(userId: string, courseId: string, lessonId: string): Promise<void> {
+    if (!userId || !courseId || !lessonId) return;
+
+    try {
+      localStorage.setItem(`telecom_last_course_state_${userId}`, JSON.stringify({
+        courseId,
+        lessonId,
+        lastAccessedAt: new Date().toISOString()
+      }));
+    } catch {
+      // ignore
+    }
+
+    if (isSupabaseConfigured) {
+      try {
+        await supabase
+          .from('user_course_state')
+          .upsert(
+            {
+              user_id: userId,
+              course_id: courseId,
+              last_lesson_id: lessonId,
+              last_accessed_at: new Date().toISOString()
+            },
+            { onConflict: 'user_id,course_id' }
+          );
+      } catch {
+        // silent failover if table not yet created
+      }
+    }
+  }
+
+  /**
+   * Get the last accessed course & lesson for user
+   */
+  async getLastUserCourseState(userId: string): Promise<{ courseId: string; lessonId: string; lastAccessedAt: string } | null> {
+    if (!userId) return null;
+
+    if (isSupabaseConfigured) {
+      try {
+        const { data, error } = await supabase
+          .from('user_course_state')
+          .select('course_id, last_lesson_id, last_accessed_at')
+          .eq('user_id', userId)
+          .order('last_accessed_at', { ascending: false })
+          .limit(1)
+          .maybeSingle();
+
+        if (!error && data && data.course_id && data.last_lesson_id) {
+          return {
+            courseId: data.course_id,
+            lessonId: data.last_lesson_id,
+            lastAccessedAt: data.last_accessed_at
+          };
+        }
+
+        // Secondary fallback to user_progress if user_course_state has no rows yet
+        const { data: progData } = await supabase
+          .from('user_progress')
+          .select('lesson_id, updated_at')
+          .eq('user_id', userId)
+          .order('updated_at', { ascending: false })
+          .limit(1)
+          .maybeSingle();
+
+        if (progData && progData.lesson_id) {
+          // Find which course this lesson belongs to
+          const courses = await this.getCourses();
+          for (const c of courses) {
+            for (const ch of c.chapters || []) {
+              if ((ch.lessons || []).some((l) => l.id === progData.lesson_id)) {
+                return {
+                  courseId: c.id,
+                  lessonId: progData.lesson_id,
+                  lastAccessedAt: progData.updated_at
+                };
+              }
+            }
+          }
+        }
+      } catch {
+        // ignore
+      }
+    }
+
+    try {
+      const raw = localStorage.getItem(`telecom_last_course_state_${userId}`);
+      if (raw) return JSON.parse(raw);
+    } catch {
+      // ignore
+    }
+
+    return null;
+  }
+
+  /**
+   * Get saved video position for user
+   */
+  async getVideoPosition(userId: string, lessonId: string): Promise<number> {
+    if (!userId || !lessonId) return 0;
+    const localMap = this.getLocalUserProgress(userId);
+    return localMap[lessonId]?.last_position_seconds || 0;
   }
 }
 
